@@ -116,8 +116,8 @@
         hits: metal ? (RULES.metalBreakable ? 3 : Infinity) : b.t.endsWith('-s') ? RULES.stripedHits : 1,
         required: !metal || RULES.metalBreakable,
         mover: !!b.move,
-        vx: b.move ? (b.c % 2 ? -1 : 1) * RULES.moverSpeed : 0,
-        vy: b.move ? (b.r % 2 ? -0.5 : 0.5) * RULES.moverSpeed : 0,
+        vx: b.move ? (Math.round(b.c * 10) % 2 ? -1 : 1) * RULES.moverSpeed : 0,
+        vy: b.move === true ? (b.r % 2 ? -0.5 : 0.5) * RULES.moverSpeed : 0,
       };
     });
   }
