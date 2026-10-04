@@ -63,6 +63,22 @@ Son kare Stage 15'i açıkça gösteriyor. **“Oyun 15 bölüm” veya “kesin
 
 Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu bulunmadı. Aynı arşivleri tekrar aramak şu an öncelik değil.
 
+## 2. oturum durumu (4 Ekim 2026)
+
+- Oyun `index.html` + `src/levels.js` + `src/game.js` olarak yeniden yazıldı. Mantıksal alan 1264×948, yani referans karelerinin ölçeği.
+- Haritalar: **Stage 1–10**, kullanıcının gönderdiği "Stage N" karelerinden ölçüldü (`reference-frames/user-stage-*.jpg`). Stage 10 bitince "Stage 10 tamamlandı" ekranı çıkıyor. Sırası bilinmeyen yeşil simetrik harita (`0550.jpg`) oyunda değil, `EXBLOCK_UNPLACED` içinde bekliyor.
+- Sıradaki iş: Stage 11 ve sonrası için kareler; Stage 8 yazı altı bölgesi ve Stage 10 karesinin dosyası.
+- Menü (New Game / Continue / Exit), HUD (X can, SCORE 8 hane), Stage yazısı ve nebula arka plan referanslara göre çizildi. Continue, bölüm başında tarayıcıya kayıt tutuyor (orijinal davranış doğrulanmadı).
+- Kurallar `src/game.js` → `RULES`: başlangıç 5 can, tuğla +1000, çubuğa çarpma +100, baloncuk bonusu +10000 (gözlem, `birinci.mov`); çizgili blok 2 vuruş, metal kırılmaz, baloncuk olasılığı %12, top/çubuk hızları (varsayım).
+- Videodan uygulananlar: bölüm girişi animasyonu (koyu gri → gümüş → renk), kırılma animasyonu, çizgili tuğla 2 vuruş, Stage 6 hareketli mavi kareler, yaratıklar (+50000), baloncuk ödülleri (+10000; lazer çubuk / ekstra can / yalnız puan).
+- Videodan henüz uygulanmayanlar: turuncu ateş topları ve füze mermileri (tetikleyici belirsiz), top/çubuk hızları (4x ekran kaydından ölçülemedi).
+- Çoklu top ve lazer yalnızca `?debug` modunda (1, 2 tuşları); hangi nesnenin bunları verdiği bilinmiyor.
+- Testler: `node tests/levels.test.js`. Tarayıcıda menü, 4 harita ve kısa oynanış hatasız çalıştı.
+- **YouTube bu ortamdan açılamıyor (bot doğrulaması).** Yeni haritalar için kullanıcıdan "Stage N" kareleri alınmalı. Ayrıntı ve çözülmemiş farklar için ORIGINAL-ANALYSIS.md.
+
+- Oyunda Stage 1–21 var. Continue orijinaldeki gibi ulaşılan bölümler arasında seçim ekranı açar (0 puan, 5 can).
+- Menüde **Stage Select** var (orijinalde yok): tüm bölümler küçük resimleriyle listelenir, tıklanan bölüm 5 canla başlar. `index.html#stage7` bağlantısı doğrudan o bölümü, `#stages` seçim ekranını açar.
+
 ## Devam edecek Codex için işler
 
 Önce araştırmayı tamamla, sonra oyun davranışını değiştir:
