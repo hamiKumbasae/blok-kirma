@@ -129,6 +129,17 @@ Uygulandı: +1000 / +100 / +10000 puanları, kırmızı vuruş + altın halka + 
 | Stage 6 halkalarındaki mavi kareler **hareketli**: boşlukta sağa sola kayıyor, halka kırılınca alanda dolaşıp tuğlalara/duvarlara çarparak yön değiştiriyor | `video-stage-06-movers.jpg` | yüksek |
 | Stage 7'de baloncuk yakalanınca X2 → X3 ve +11000: **ekstra can** veren baloncuk var (görünüşü ayırt edilemedi) | `video-stage-07-life.jpg` | orta |
 | Metal bloklar kalırken bölüm bitiyor (Stage 5, 7) | | yüksek |
-| Stage 8 yazısız başlangıç karesi: c11 r3'te çizgili kırmızı kare eksikti, eklendi (69 blok) | `video-stage-08-start.png` | yüksek |
+| Stage 8 yazısız başlangıç karesi: c11 r3'te çizgili kırmızı kare eksikti, eklendi (69 blok) | `video-stage-08-start.jpg` | yüksek |
 | Stage 5 sonu/Stage 6'da turuncu parlayan toplar ve yukarı giden ateş/füze mermileri; tetikleyen ödül belirsiz (uygulanmadı) | | düşük |
 | Can kayıpları: Stage 6'da X4 → X3 ve X3 → X2 (top kaçtı) | | yüksek |
+
+## `videom_parca_03.mov` (81 sn, 4x; Stage 8 sonu → Stage 10 sonu) ve `videom_parca_04.mov` (12 sn; Stage 11 girişi)
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| Stage 9 mor kareleri kendi sıralarında **yatay kayıyor**; önceki "ızgaraya oturmayan konumlar" bu hareketten | `video-stage-09-start.jpg` ve ardışık kareler | yüksek |
+| Stage 10 yazısız başlangıç karesi ölçümle birebir aynı (48 blok) | `video-stage-10-start.jpg` | yüksek |
+| Çizgili kırmızı bloklar Stage 10'da da iki vuruşta kırılıyor (önce düz kırmızı) | | yüksek |
+| Ekstra can tekrar görüldü: Stage 9'da X2 → X3, Stage 10'da X2 → X3 | | yüksek |
+| Yaratık +50000 (Stage 10: 1481200 → 1531200) | | yüksek |
+| Stage 11: mavi küçük kareler çapraz çizgiler halinde; başka yöne kayıyor olabilir — oyuna eklenmedi (ilk 10 bölüm kapsamı) | `video-stage-11-intro.jpg` | — |

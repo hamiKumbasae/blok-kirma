@@ -151,7 +151,7 @@
   // Stage 8 — reference-frames/user-stage-08.jpg ("Stage 8"). Sağ üstte sarı
   // çerçeveli kıvrım, soldan sağa yükselen sarı/mavi merdiven, altta mavi ve
   // sarı tam sıralar, en altta yeşil kareler. Yazısız başlangıç karesiyle
-  // doğrulandı (reference-frames/video-stage-08-start.png).
+  // doğrulandı (reference-frames/video-stage-08-start.jpg).
   const stage8 = [
     R('yellow', 11, 0, 1), R('yellow', 12, 0), R('yellow', 14, 0),
     V('yellow', 11, 1), R('blue', 12, 1, 1), R('blue', 13, 1), V('blue', 15, 1), V('yellow', 16, 1),
@@ -167,10 +167,10 @@
   ];
 
   // Stage 9 — reference-frames/user-stage-09.jpg ("Stage 9"). Üstte ve altta
-  // çizgili yeşil kareler, ortada ızgaraya oturmayan iki sıra mor kare
-  // (konumlar ölçüldü, yatayda simetrik).
+  // çizgili yeşil kareler, ortada iki sıra mor kare. Mor kareler kendi
+  // sıralarında yatay kayıyor (videom_parca_03); başlangıç konumları ölçüldü.
   const greenSq = (cols, r) => cols.map((c) => R('green-s', c, r, 1));
-  const purpleSq = (cols, r) => cols.flatMap((c) => [R('purple', c, r, 1), R('purple', +(17 - c).toFixed(2), r, 1)]);
+  const purpleSq = (cols, r) => cols.flatMap((c) => [R('purple', c, r, 1), R('purple', +(17 - c).toFixed(2), r, 1)]).map((b) => ({ ...b, move: 'h' }));
   const stage9 = [
     ...greenSq([2, 4, 6, 8, 9, 11, 13, 15], 1),
     ...purpleSq([0.6, 3.4, 4.6, 7.4], 4),
@@ -179,9 +179,9 @@
     ...greenSq([0, 2, 4, 6, 8, 9, 11, 13, 15, 17], 9),
   ];
 
-  // Stage 10 — kullanıcının sohbette gönderdiği "Stage 10" karesi (dosyaya
-  // kaydedilemedi; görsel ölçüm). Çizgili kırmızı dikey bloklarla "HUK"
-  // benzeri biçim, metal ara parçalar.
+  // Stage 10 — reference-frames/video-stage-10-start.jpg (yazısız başlangıç
+  // karesiyle birebir doğrulandı). Çizgili kırmızı dikey bloklarla "HUK"
+  // biçimi, metal ara parçalar.
   const redCol = (c) => [0, 2, 4, 6, 8].map((r) => V('red-s', c, r));
   const stage10 = [
     ...redCol(2), ...redCol(3), ...redCol(6), ...redCol(7), ...redCol(10), ...redCol(11),
@@ -201,7 +201,7 @@
     { id: 'stage-7', stage: 7, name: 'Basamaklar ve L', source: 'reference-frames/user-stage-07.jpg', confidence: 'yüksek', bricks: stage7 },
     { id: 'stage-8', stage: 8, name: 'Sarı kıvrım', source: 'reference-frames/user-stage-08.jpg', confidence: 'orta-yüksek (yazı altı bölge)', bricks: stage8 },
     { id: 'stage-9', stage: 9, name: 'Kareler', source: 'reference-frames/user-stage-09.jpg', confidence: 'yüksek (mor kareler ±0.1 hücre)', bricks: stage9 },
-    { id: 'stage-10', stage: 10, name: 'Kırmızı sütunlar', source: 'sohbet görüntüsü (kaydedilemedi)', confidence: 'orta (görsel ölçüm)', bricks: stage10 },
+    { id: 'stage-10', stage: 10, name: 'Kırmızı sütunlar', source: 'reference-frames/video-stage-10-start.jpg', confidence: 'yüksek', bricks: stage10 },
   ];
   // Sırası bilinmeyen haritalar: oyunda kullanılmaz, Stage karesi gelince
   // doğru yere taşınır.
