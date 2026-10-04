@@ -37,7 +37,8 @@
     ...row('green', [0, 4, 8, 12, 16], 3),
     ...['green', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'green']
       .map((t, i) => R(t, i * 2, 5)),
-    ...['green', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'green']
+    // c10: oyun sırasında yeşil (birinci.mov); girişte mor, vurulunca kırmızı görünüyor.
+    ...['green', 'purple', 'blue', 'purple', 'blue', 'green', 'blue', 'purple', 'green']
       .map((t, i) => R(t, i * 2, 7)),
   ];
 
