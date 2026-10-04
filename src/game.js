@@ -95,9 +95,13 @@
   })();
 
   // ---------- durum ----------
-  const MENU = ['New Game', 'Continue', 'Exit'];
+  const MENU = ['New Game', 'Continue', 'Stage Select', 'Exit'];
+  // Stage Select bu yeniden yapıma eklendi; orijinal menüde yok.
+  const MENU_Y0 = 520, MENU_DY = 100;
+  const SEL = { cols: 4, x0: 42, y0: 110, w: 280, h: 190, gx: 20, gy: 10 };
   const S = {
     creatures: [], spawnT: 0, introT: 99, fireT: 0,
+    selIndex: 0,
     mode: 'menu', menuIndex: 0, levelIndex: 0, score: 0, lives: RULES.startLives,
     bricks: [], balls: [], shots: [], effects: [], debris: [], bonuses: [], paddleX: (W - PADDLE.w) / 2, laser: 0,
     timer: 0, paused: false,
@@ -158,6 +162,7 @@
     const item = MENU[S.menuIndex];
     if (item === 'New Game') newGame();
     else if (item === 'Continue') continueGame();
+    else if (item === 'Stage Select') S.mode = 'select';
     else S.mode = 'exit';
   }
 
@@ -491,7 +496,7 @@
     ctx.fillStyle = 'rgba(200,195,255,.55)';
     ctx.fillRect(WALL_L - 3, HUD_H, 3, H - HUD_H); ctx.fillRect(WALL_R, HUD_H, 3, H - HUD_H);
     // Menüde üst bilgi çubuğu yok (user-menu.jpg); yalnızca ince üst kenar.
-    if (S.mode === 'menu' || S.mode === 'exit') { ctx.fillStyle = '#241878'; ctx.fillRect(0, 0, W, 8); return; }
+    if (S.mode === 'menu' || S.mode === 'exit' || S.mode === 'select') { ctx.fillStyle = '#241878'; ctx.fillRect(0, 0, W, 8); return; }
     // HUD çubuğu
     const g = ctx.createLinearGradient(0, 0, 0, HUD_H);
     g.addColorStop(0, '#6d61d8'); g.addColorStop(0.5, '#3d2fa0'); g.addColorStop(1, '#241878');
@@ -536,19 +541,57 @@
     outlinedText('ExBlock', W / 2 + 10, 235, 190, t, 'center');
     const hasSave = !!save.read();
     MENU.forEach((item, i) => {
-      const y = 570 + i * 103;
+      const y = MENU_Y0 + i * MENU_DY;
       const off = item === 'Continue' && !hasSave;
       const g = ctx.createLinearGradient(0, y - 30, 0, y + 30);
       g.addColorStop(0, '#fffbe0'); g.addColorStop(0.5, '#f5c23a'); g.addColorStop(1, '#c8701a');
-      outlinedText(item, W / 2, y, 58, off ? '#8f8a6a' : g, 'center');
-      if (i === S.menuIndex) { ctx.strokeStyle = '#d8d8e8'; ctx.lineWidth = 6; ctx.strokeRect(W / 2 - 268, y - 45, 536, 90); }
+      outlinedText(item, W / 2, y, 54, off ? '#8f8a6a' : g, 'center');
+      if (i === S.menuIndex) { ctx.strokeStyle = '#d8d8e8'; ctx.lineWidth = 6; ctx.strokeRect(W / 2 - 300, y - 43, 600, 86); }
     });
   }
+
+  // ---------- bölüm seçimi ----------
+  const thumbs = [];
+  function thumb(i) {
+    if (thumbs[i]) return thumbs[i];
+    const c = document.createElement('canvas'); c.width = SEL.w; c.height = SEL.h - 40;
+    const g = c.getContext('2d'), sx = c.width / (WALL_R - WALL_L), sy = c.height / (760 - FIELD_TOP);
+    g.fillStyle = 'rgba(2,2,10,.85)'; g.fillRect(0, 0, c.width, c.height);
+    for (const b of LEVELS[i].bricks) {
+      g.fillStyle = COLORS[b.t];
+      for (const [cc, r] of cellsOf(b)) {
+        const rc = cellRect(cc, r);
+        g.fillRect((rc.x - WALL_L) * sx + 0.5, (rc.y - FIELD_TOP) * sy + 0.5, rc.w * sx - 1, rc.h * sy - 1);
+      }
+    }
+    return (thumbs[i] = c);
+  }
+  function selRect(i) {
+    const col = i % SEL.cols, row = Math.floor(i / SEL.cols);
+    return { x: SEL.x0 + col * (SEL.w + SEL.gx), y: SEL.y0 + row * (SEL.h + SEL.gy) };
+  }
+  function drawSelect() {
+    outlinedText('Stage Select', W / 2, 70, 56, '#ffd84a', 'center');
+    LEVELS.forEach((lv, i) => {
+      const { x, y } = selRect(i), on = i === S.selIndex;
+      ctx.drawImage(thumb(i), x, y);
+      ctx.strokeStyle = on ? '#ffd84a' : 'rgba(200,195,255,.45)'; ctx.lineWidth = on ? 6 : 2;
+      ctx.strokeRect(x, y, SEL.w, SEL.h);
+      outlinedText('Stage ' + lv.stage, x + 12, y + SEL.h - 20, 26, on ? '#ffd84a' : '#f4ecb0');
+      ctx.font = '600 17px Arial, sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#c9c3f2';
+      ctx.fillText(lv.name, x + SEL.w - 10, y + SEL.h - 18);
+    });
+    ctx.font = '600 20px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#c9c3f2';
+    ctx.fillText('Tıkla ya da oklar + Enter · Esc: menü', W / 2, H - 14);
+  }
+  function startStage(i) { S.score = 0; S.lives = RULES.startLives; startLevel(i); }
+  function selMove(d) { S.selIndex = Math.max(0, Math.min(LEVELS.length - 1, S.selIndex + d)); }
 
   function draw() {
     ctx.drawImage(bg, 0, 0);
     drawFrame();
     if (S.mode === 'menu') { drawMenu(); return; }
+    if (S.mode === 'select') { drawSelect(); return; }
     if (S.mode === 'exit') { panel('Exit', ['Enter / Boşluk: menüye dön']); return; }
     for (const br of S.bricks) if (br.alive) drawBrick(br);
     drawEffects();
@@ -570,6 +613,7 @@
   // ---------- giriş ----------
   function confirm() {
     if (S.mode === 'menu') menuSelect();
+    else if (S.mode === 'select') startStage(S.selIndex);
     else if (S.mode === 'exit' || S.mode === 'gameover' || S.mode === 'end') S.mode = 'menu';
     else launch();
   }
@@ -585,6 +629,9 @@
     if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', ' ', 'enter'].includes(k)) e.preventDefault();
     if (KEYMAP[k]) keys.add(KEYMAP[k]);
     if (e.repeat) return;
+    if (S.mode === 'select' && ['arrowleft', 'arrowright', 'arrowup', 'arrowdown'].includes(k)) {
+      selMove({ arrowleft: -1, arrowright: 1, arrowup: -SEL.cols, arrowdown: SEL.cols }[k]); return;
+    }
     if (k === ' ' || k === 'enter') confirm();
     else if (k === 'arrowup' || k === 'w') menuMove(-1);
     else if (k === 'arrowdown' || k === 's') menuMove(1);
@@ -609,6 +656,7 @@
     el.addEventListener('pointerdown', (e) => {
       el.setPointerCapture(e.pointerId); keys.add(key);
       menuMove(key === 'left' ? -1 : 1);
+      if (S.mode === 'select') selMove(key === 'left' ? -1 : 1);
     });
     for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) el.addEventListener(ev, () => keys.delete(key));
   }
@@ -620,8 +668,13 @@
   canvas.addEventListener('pointerdown', (e) => {
     const p = toLogical(e);
     if (S.mode === 'menu') {
-      const i = Math.round((p.y - 570) / 103);
+      const i = Math.round((p.y - MENU_Y0) / MENU_DY);
       if (i >= 0 && i < MENU.length) { S.menuIndex = i; menuSelect(); }
+      return;
+    }
+    if (S.mode === 'select') {
+      const i = LEVELS.findIndex((_, j) => { const r = selRect(j); return p.x >= r.x && p.x <= r.x + SEL.w && p.y >= r.y && p.y <= r.y + SEL.h; });
+      if (i >= 0) { S.selIndex = i; startStage(i); }
       return;
     }
     dragging = true; canvas.setPointerCapture(e.pointerId);
@@ -643,6 +696,11 @@
     while (acc >= STEP) { update(STEP); acc -= STEP; }
     draw();
     requestAnimationFrame(frame);
+
+  // #stage5 gibi bir bağlantı doğrudan o bölümü açar; #stages seçim ekranını.
+  const hashStage = /^#stage(\d+)$/.exec(location.hash);
+  if (hashStage) { const i = LEVELS.findIndex((l) => l.stage === +hashStage[1]); if (i >= 0) startStage(i); }
+  else if (location.hash === '#stages') S.mode = 'select';
   }
   requestAnimationFrame(frame);
 
