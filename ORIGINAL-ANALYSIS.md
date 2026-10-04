@@ -120,3 +120,15 @@ Uygulandı: +1000 / +100 / +10000 puanları, kırmızı vuruş + altın halka + 
 | Metal bloklar kırılmıyor, bölüm onlar dururken bitiyor (Stage 2) | | yüksek |
 | Stage 3'te 2–3 turuncu parlayan top ve yukarı giden füze benzeri mermi görüldü; tetikleyen ödül belirsiz (uygulanmadı) | | düşük |
 | Stage 3 sonunda top kaçınca X5 → X4 | | yüksek |
+
+## `videom_parca_02.mov` (86 sn, 4x; Stage 5 sonu → Stage 8 başı)
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| Çizgili tuğlalar **iki vuruşta** kırılıyor: ilk vuruşta çizgiler gidip düz renge dönüyor (Stage 5 kırmızı kare, Stage 6 köşeler, Stage 7 mor sıra) | | yüksek |
+| Stage 6 halkalarındaki mavi kareler **hareketli**: boşlukta sağa sola kayıyor, halka kırılınca alanda dolaşıp tuğlalara/duvarlara çarparak yön değiştiriyor | `video-stage-06-movers.jpg` | yüksek |
+| Stage 7'de baloncuk yakalanınca X2 → X3 ve +11000: **ekstra can** veren baloncuk var (görünüşü ayırt edilemedi) | `video-stage-07-life.jpg` | orta |
+| Metal bloklar kalırken bölüm bitiyor (Stage 5, 7) | | yüksek |
+| Stage 8 yazısız başlangıç karesi: c11 r3'te çizgili kırmızı kare eksikti, eklendi (69 blok) | `video-stage-08-start.png` | yüksek |
+| Stage 5 sonu/Stage 6'da turuncu parlayan toplar ve yukarı giden ateş/füze mermileri; tetikleyen ödül belirsiz (uygulanmadı) | | düşük |
+| Can kayıpları: Stage 6'da X4 → X3 ve X3 → X2 (top kaçtı) | | yüksek |
