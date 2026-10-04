@@ -131,6 +131,65 @@
     R('blue', 5.25, 5, 1), R('blue', 5.25, 6, 1), R('blue', 11.25, 5, 1), R('blue', 11.25, 6, 1),
   ];
 
+  // Stage 7 — reference-frames/user-stage-07.jpg ("Stage 7"). Üstte çizgili
+  // mor / sarı basamaklar arasında yeşil dikey çiftler, altında kırmızı ve
+  // mavi dikey bloklar, iki yanda metal L'ler; altta metal kareler ve L'ler.
+  // Satır 3'teki kırmızılar kısmen yazının altında.
+  const stage7 = [
+    ...row('violet-s', [1, 6, 10, 15], 1),
+    ...[4, 5, 8, 9, 12, 13].map((c) => V('green', c, 1)),
+    ...row('yellow', [2, 6, 10, 14], 2),
+    L('metal', [[1, 3], [1, 4], [2, 4]]), L('metal', [[16, 3], [15, 4], [16, 4]]),
+    R('red', 4, 3), R('red', 12, 3),
+    ...[6, 7, 10, 11].map((c) => V('blue', c, 3)),
+    R('metal', 0, 6, 1), L('metal', [[4, 6], [4, 7], [5, 7]]), R('metal', 8, 6),
+    L('metal', [[13, 6], [12, 7], [13, 7]]), R('metal', 17, 6, 1),
+    R('metal', 2, 7, 1), R('metal', 15, 7, 1),
+  ];
+
+  // Stage 8 — reference-frames/user-stage-08.jpg ("Stage 8"). Sağ üstte sarı
+  // çerçeveli kıvrım, soldan sağa yükselen sarı/mavi merdiven, altta mavi ve
+  // sarı tam sıralar, en altta yeşil kareler. Yazının altındaki satır 3–4
+  // bölgesinde (c 4–9) görünmeyen blok olabilir.
+  const stage8 = [
+    R('yellow', 11, 0, 1), R('yellow', 12, 0), R('yellow', 14, 0),
+    V('yellow', 11, 1), R('blue', 12, 1, 1), R('blue', 13, 1), V('blue', 15, 1), V('yellow', 16, 1),
+    R('red-s', 12, 2, 1), R('metal', 13, 2), R('yellow', 17, 2, 1),
+    R('yellow', 10, 3, 1), R('blue', 15, 3, 1), V('blue', 16, 3), R('yellow', 17, 3, 1),
+    R('yellow', 6, 4, 1), R('yellow', 7, 4, 1), R('yellow', 8, 4), R('red-s', 10, 4, 1), R('green-s', 15, 4, 1), V('yellow', 17, 4),
+    R('yellow', 2, 5, 1), R('yellow', 3, 5, 1), R('yellow', 4, 5), R('yellow', 6, 5, 1), R('blue', 7, 5), R('red-s', 9, 5, 1), R('green-s', 13, 5), V('blue', 16, 5),
+    R('yellow', 1, 6), R('blue', 3, 6), R('blue', 5, 6), R('green-s', 7, 6, 1), R('green-s', 12, 6, 1), V('yellow', 17, 6),
+    R('yellow', 0, 7, 1), R('blue', 1, 7), R('metal', 4, 7), R('green-s', 8, 7), R('green-s', 10, 7), R('metal', 13, 7), R('blue', 16, 7, 1),
+    R('yellow', 0, 8, 1), R('blue', 1, 8, 1), ...row('blue', [2, 4, 6, 8, 10], 8), R('yellow', 12, 8, 1), ...row('blue', [13, 15], 8), R('yellow', 17, 8, 1),
+    ...row('yellow', [1, 3, 5, 7, 9], 9), R('yellow', 11, 9, 1), ...row('yellow', [13, 15], 9),
+    ...[2, 4, 6, 8, 10, 14, 16].map((c) => R('green', c, 10, 1)),
+  ];
+
+  // Stage 9 — reference-frames/user-stage-09.jpg ("Stage 9"). Üstte ve altta
+  // çizgili yeşil kareler, ortada ızgaraya oturmayan iki sıra mor kare
+  // (konumlar ölçüldü, yatayda simetrik).
+  const greenSq = (cols, r) => cols.map((c) => R('green-s', c, r, 1));
+  const purpleSq = (cols, r) => cols.flatMap((c) => [R('purple', c, r, 1), R('purple', +(17 - c).toFixed(2), r, 1)]);
+  const stage9 = [
+    ...greenSq([2, 4, 6, 8, 9, 11, 13, 15], 1),
+    ...purpleSq([0.6, 3.4, 4.6, 7.4], 4),
+    ...purpleSq([0.7, 2.2, 4.35, 5.7, 7.7], 5),
+    ...greenSq([1, 3, 5, 7, 10, 12, 14, 16], 8),
+    ...greenSq([0, 2, 4, 6, 8, 9, 11, 13, 15, 17], 9),
+  ];
+
+  // Stage 10 — kullanıcının sohbette gönderdiği "Stage 10" karesi (dosyaya
+  // kaydedilemedi; görsel ölçüm). Çizgili kırmızı dikey bloklarla "HUK"
+  // benzeri biçim, metal ara parçalar.
+  const redCol = (c) => [0, 2, 4, 6, 8].map((r) => V('red-s', c, r));
+  const stage10 = [
+    ...redCol(2), ...redCol(3), ...redCol(6), ...redCol(7), ...redCol(10), ...redCol(11),
+    V('metal', 4, 4), V('metal', 5, 4), R('metal', 8, 8), R('metal', 8, 9),
+    V('red-s', 15, 0), R('red-s', 16, 0, 1), R('red-s', 14, 1, 1), V('red-s', 14, 2), V('red-s', 15, 2),
+    R('red-s', 13, 3, 1), R('red-s', 14, 4, 1), R('red-s', 12, 4), R('red-s', 12, 5),
+    R('red-s', 13, 6, 1), V('red-s', 14, 6), V('red-s', 15, 7), R('red-s', 15, 9, 1), V('red-s', 16, 8),
+  ];
+
   root.EXBLOCK_LEVELS = [
     { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: down(stage1) },
     { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: down(stage2) },
@@ -138,6 +197,10 @@
     { id: 'stage-4', stage: 4, name: 'İki kule', source: 'reference-frames/user-stage-04.jpg', confidence: 'yüksek (yatay konum ±0.25 hücre)', bricks: stage4 },
     { id: 'stage-5', stage: 5, name: 'Elmas', source: 'reference-frames/user-stage-05.jpg', confidence: 'yüksek (1 kare desenden)', bricks: stage5 },
     { id: 'stage-6', stage: 6, name: 'İki halka', source: 'reference-frames/user-stage-06.jpg', confidence: 'yüksek', bricks: stage6 },
+    { id: 'stage-7', stage: 7, name: 'Basamaklar ve L', source: 'reference-frames/user-stage-07.jpg', confidence: 'yüksek', bricks: stage7 },
+    { id: 'stage-8', stage: 8, name: 'Sarı kıvrım', source: 'reference-frames/user-stage-08.jpg', confidence: 'orta-yüksek (yazı altı bölge)', bricks: stage8 },
+    { id: 'stage-9', stage: 9, name: 'Kareler', source: 'reference-frames/user-stage-09.jpg', confidence: 'yüksek (mor kareler ±0.1 hücre)', bricks: stage9 },
+    { id: 'stage-10', stage: 10, name: 'Kırmızı sütunlar', source: 'sohbet görüntüsü (kaydedilemedi)', confidence: 'orta (görsel ölçüm)', bricks: stage10 },
     { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: down(greenSym) },
   ];
   root.EXBLOCK_GRID = { cols: 18, x0: 49, y0: 73.5, cw: 65, ch: 63.5 };
