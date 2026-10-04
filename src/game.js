@@ -25,13 +25,17 @@
     creatureEvery: 7,     // varsayım (s)
     creatureMax: 4,       // gözlem (orta): Stage 3'te aynı anda 4 yaratık
     creatureSpeed: 110,   // varsayım (px/s)
-    bonusFall: 240,       // varsayım (px/s)
+    bonusFall: 110,       // gözlem (orta): trim videoları, gerçek hız
     stripedHits: 2,       // gözlem (yüksek): ilk vuruşta çizgiler gider, ikincide kırılır
-    moverSpeed: 70,       // varsayım (px/s): Stage 6 hareketli mavi kareler
+    moverSpeed: 45,       // gözlem (orta): Stage 6/9 hareketli kareler, gerçek hız
+    towerPeriod: 5.9,     // gözlem (orta): Stage 4 kuleleri ~5.9 sn'de bir ortada buluşur
+    towerLag: 0.12,       // gözlem (düşük): kule sıraları hafif dalgalı kayıyor (radyan/sıra)
     metalBreakable: false, // varsayım: metal bloklar bölüm bitişine sayılmıyor
-    ballSpeed: 560,       // varsayım (px/s, 1264 px genişlikte)
-    ballSpeedMax: 900,    // varsayım
-    paddleSpeed: 950,     // varsayım
+    ballSpeed: 135,       // gözlem (yüksek): trim_01, Stage 1 başı ~134 px/s (1264 px genişlik)
+    ballStageStep: 15,    // gözlem (orta): Stage 4'te ~187 px/s → bölüm başına ~+15
+    ballSpeedMax: 260,    // varsayım
+    paddleSpeed: 340,     // gözlem (orta): trim_05, çubuk en fazla ~300–370 px/s
+    shotSpeed: 700,       // varsayım (lazer ışını)
     maxBounce: 1.05,      // varsayım (radyan, ~60°)
     laserTime: 12,        // varsayım (s), yalnızca debug
   };
@@ -115,7 +119,8 @@
         t: b.t, cells, set, rects: cells.map(([c, r]) => cellRect(c, r)), alive: true, flash: 0,
         hits: metal ? (RULES.metalBreakable ? 3 : Infinity) : b.t.endsWith('-s') ? RULES.stripedHits : 1,
         required: !metal || RULES.metalBreakable,
-        mover: !!b.move,
+        mover: !!b.move && b.move !== 'tower',
+        tower: b.move === 'tower' ? { side: b.side, dc: b.dc } : null,
         vx: b.move ? (Math.round(b.c * 10) % 2 ? -1 : 1) * RULES.moverSpeed : 0,
         vy: b.move === true ? (b.r % 2 ? -0.5 : 0.5) * RULES.moverSpeed : 0,
       };
@@ -137,7 +142,7 @@
     S.paddleX = (W - PADDLE.w) / 2;
     dockBall();
     S.mode = 'intro'; S.timer = 2.2; S.paused = false; S.introT = 0;
-    S.creatures = []; S.spawnT = RULES.creatureFirst;
+    S.creatures = []; S.spawnT = RULES.creatureFirst; S.levelT = 0;
     save.write({ levelIndex: index, score: S.score, lives: S.lives });
   }
 
@@ -163,7 +168,8 @@
     if (docked) {
       docked.docked = false;
       const a = -0.45;
-      docked.vx = Math.sin(a) * RULES.ballSpeed; docked.vy = -Math.cos(a) * RULES.ballSpeed;
+      const v = RULES.ballSpeed + RULES.ballStageStep * S.levelIndex;
+      docked.vx = Math.sin(a) * v; docked.vy = -Math.cos(a) * v;
     } else if (S.laser > 0 && S.shots.length < 4) {
       for (const dx of [26, PADDLE.w - 26]) S.shots.push({ x: S.paddleX + dx, y: PADDLE.y - 4 });
     }
@@ -241,7 +247,22 @@
     }
     return false;
   }
+  // Stage 4 kuleleri (trim_05): iki kule birlikte ortada buluşup duvarlara
+  // açılır; sıralar hafif gecikmeyle kayar.
+  function moveTowers() {
+    const w = (Math.PI * 2) / RULES.towerPeriod;
+    for (const br of S.bricks) {
+      if (!br.tower) continue;
+      const r = br.cells[0][1];
+      const cL = 2.8 + 2.2 * Math.sin(w * S.levelT - 0.23 - r * RULES.towerLag);
+      const c = br.tower.side === 'L' ? cL + br.tower.dc : 14 - cL + br.tower.dc;
+      const x = Math.round(GRID.x0 + c * GRID.cw);
+      br.rects[0].x = x; br.rects[1].x = x + br.rects[0].w;
+    }
+  }
   function moveBricks(dt) {
+    S.levelT += dt;
+    moveTowers();
     for (const br of S.bricks) {
       if (!br.alive || !br.mover) continue;
       const r = br.rects[0];
@@ -277,13 +298,14 @@
       b.y = PADDLE.y - BALL_R;
       S.score += RULES.paddleScore;
       const off = Math.max(-1, Math.min(1, (b.x - (S.paddleX + PADDLE.w / 2)) / (PADDLE.w / 2)));
-      const speed = Math.min(RULES.ballSpeedMax, Math.hypot(b.vx, b.vy) + 6);
+      const speed = Math.min(RULES.ballSpeedMax, Math.hypot(b.vx, b.vy) + 1);
       b.vx = Math.sin(off * RULES.maxBounce) * speed; b.vy = -Math.cos(off * RULES.maxBounce) * speed;
       return;
     }
     collideBall(b, px, py);
     // Neredeyse yatay sonsuz döngüyü önle.
-    if (Math.abs(b.vy) < 90) { b.vy = b.vy < 0 ? -90 : 90; }
+    const minVy = Math.hypot(b.vx, b.vy) * 0.3;
+    if (Math.abs(b.vy) < minVy) { b.vy = b.vy < 0 ? -minVy : minVy; }
   }
 
   function update(dt) {
@@ -308,7 +330,7 @@
     S.balls = S.balls.filter((b) => b.y - BALL_R < H);
 
     for (const s of S.shots) {
-      s.y -= 1500 * dt;
+      s.y -= RULES.shotSpeed * dt;
       for (const br of S.bricks) {
         if (!br.alive || s.dead) continue;
         if (br.rects.some((r) => s.x >= r.x && s.x <= r.x + r.w && s.y >= r.y && s.y <= r.y + r.h)) { hitBrick(br); s.dead = true; }
