@@ -42,3 +42,22 @@ Ek gözlemler:
 - `reference-frames/stage-15.jpg` yaklaşık 58:17'de Stage 15 yazısını doğruluyor ve ilk haritaya benzeyen bir düzen gösteriyor. Tekrarın nedenini veya toplam bölüm sayısını kanıtlamıyor.
 
 Tarama ilk yaklaşık 8 dakikada aralıklı örnekler ve sonrasında birkaç kontrol karesiyle sınırlı kaldı. Her bölümün eksiksiz haritası henüz çıkarılmadı. Seri tarama sırasında yanlış zamanlı veya kırpılmış görüntüler oluştu; bu denemeler `unverified-captures/` klasörüne taşınıp Git kapsamından çıkarıldı. Teslim edilen kareler dahi bir bölümü kısmen temizlenmiş halde gösterebilir; tam bölüm haritası yerine otomatik kullanılmamalı.
+
+## Kullanıcı ekran görüntüleri ve harita ölçümü — 4 Ekim 2026 (2. oturum)
+
+Bu oturumdan YouTube'a erişilemedi (önce ağ politikası, sonra Google bot doğrulaması). Kullanıcı kendi bilgisayarından dört kare gönderdi; `reference-frames/user-*.jpg` olarak kaydedildi. Videodaki zamanları belirtilmedi.
+
+| Dosya | Görünen | Güven |
+| --- | --- | --- |
+| `user-menu.jpg` | Ana menü: ateş dokulu "ExBlock" başlığı, New Game (gri-beyaz çerçeveyle seçili), Continue, Exit. **Menüde üst bilgi çubuğu yok.** | yüksek |
+| `user-stage-01.jpg` | "Stage 1" yazısı, harita sağlam | yüksek |
+| `user-stage-02.jpg` | "Stage 2" yazısı, harita sağlam | yüksek |
+| `user-stage-03-start.jpg` | Spiral harita, top çubukta; numara görünmüyor, sıradan Stage 3 kabul edildi | orta-yüksek |
+
+Ölçüm yöntemi: oyun alanı 18 sütunluk yarım-tuğla ızgarası. 1264 px genişliğe ölçeklenmiş karede hücre 65 × 63.5 px, ilk hücre x=49, y=137. Normal tuğla 2×1, dikey tuğla 1×2, L parçaları üç hücre. Haritalar `src/levels.js` içinde, sayım ve çakışma testi `tests/levels.test.js` içinde.
+
+Çözülmemiş fark (önemli):
+- Stage 1 alt sırası kullanıcı karesinde `G, mor-çizgili, mavi-çizgili, … , G`; uzun videonun `0010.jpg` karesinde ise çizgisiz `G P B P B R B P G` (ortada kırmızı).
+- Stage 2 orta bandı kullanıcı karesinde gümüş çizgili, alt bant hafif çizgili sarı; `0035.jpg` karesinde orta bant düz kırmızı, alt bant düz sarı.
+- Olası açıklamalar: (a) kareler farklı kayıtlardan/sürümlerden, (b) çizgili bloklar ilk vuruşta renk değiştiriyor ya da altındaki rengi gösteriyor, (c) parıltı animasyonu. Hiçbiri doğrulanmadı. Kullanıcı karelerinin hangi videodan ve hangi zamandan alındığı öğrenilmeli. Oyunda şimdilik "Stage N" yazılı kareler esas alındı.
+- Spiral iki ayrı karede (`0055.jpg`, `user-stage-03-start.jpg`) birebir aynı; bu harita güvenilir.

@@ -11,7 +11,7 @@ const levels = ctx.EXBLOCK_LEVELS;
 const grid = ctx.EXBLOCK_GRID;
 
 const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b.c + (i % b.w), b.r + Math.floor(i / b.w)]);
-const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'purple-s', 'green-s', 'silver-s', 'metal']);
+const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'blue-s', 'yellow-s', 'purple-s', 'green-s', 'silver-s', 'metal']);
 
 // Referans karelerinde sayılan blok adetleri.
 const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'green-symmetric': 57 };
