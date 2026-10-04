@@ -106,3 +106,17 @@ Kayıt YouTube oynatıcısının ekran görüntüsü olduğu için kareler tekra
 | Stage 1 alt sıranın ortası (c10) oyun sırasında **yeşil**; "Stage 1" yazısında mor, `0010.jpg`'de kırmızı (vurulma anı) | k001 karesi | yüksek |
 
 Uygulandı: +1000 / +100 / +10000 puanları, kırmızı vuruş + altın halka + kırıntı animasyonu, baloncuk bonusu (düşme olasılığı %12 varsayım). Yaratıklar henüz uygulanmadı.
+
+## `videom_parca_01.mov` (79 sn, 4x; Stage 1 sonu → Stage 4 başı)
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| Bölüm girişi: tuğlalar koyu gri → gümüş çizgili → satır satır gerçek renk (önceki "çizgili Stage kareleri" bu animasyon) | `video-stage2-intro.jpg`, Stage 2/3/4 girişleri | yüksek |
+| Sarı çekirdekli mavi baloncuk yakalanınca +10000 ve çubuk **turuncu lazer çubuğa** dönüşüyor; çift ışın kendiliğinden ve sürekli atılıyor, tuğla kırıyor; lazer bölüm sonuna kadar kalıyor | `video-laser-paddle.jpg`, 58300→70400 | yüksek |
+| Koyu çekirdekli baloncuk yalnızca +10000 (Stage 3, 245900→256900, çubuk değişmedi) | | orta |
+| Kırılan tuğlaların bir kısmından baloncuk düşüyor (Stage 2'de 46 tuğladan ~10) | | orta |
+| Yaratık yok edildiğinde **+50000** ve kırmızı parçalar (303700→353700, 353800→403800, 405000→455000) | `video-creatures-50k.jpg` | yüksek |
+| Yaratıklar üstten girip alan içinde dolaşıyor, tuğla üstlerine küçük kahverengi öbekler bırakıyor; Stage 3'te aynı anda 4 | | gözlem |
+| Metal bloklar kırılmıyor, bölüm onlar dururken bitiyor (Stage 2) | | yüksek |
+| Stage 3'te 2–3 turuncu parlayan top ve yukarı giden füze benzeri mermi görüldü; tetikleyen ödül belirsiz (uygulanmadı) | | düşük |
+| Stage 3 sonunda top kaçınca X5 → X4 | | yüksek |
