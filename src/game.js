@@ -16,7 +16,14 @@
     brickScore: 1000,     // gözlem (yüksek): birinci.mov, her kırılan tuğla +1000
     paddleScore: 100,     // gözlem (yüksek): birinci.mov, top çubuğa her çarpışta +100
     bonusScore: 10000,    // gözlem (yüksek): birinci.mov, baloncuk yakalanınca +10000
-    bonusChance: 0.12,    // varsayım: hangi tuğladan baloncuk düştüğü bilinmiyor
+    bonusChance: 0.2,     // varsayım: Stage 2'de ~46 tuğladan ~10 baloncuk (videom_parca_01)
+    laserShare: 0.35,     // varsayım: sarı çekirdekli (lazer) baloncuk oranı
+    laserInterval: 0.3,   // varsayım (s): lazer çubuk kendiliğinden çift ışın atar
+    creatureScore: 50000, // gözlem (yüksek): yaratık yok edildiği karede +50000
+    creatureFirst: 2.5,   // gözlem (orta): Stage 1'de ilk yaratık ~2.5 sn sonra
+    creatureEvery: 7,     // varsayım (s)
+    creatureMax: 4,       // gözlem (orta): Stage 3'te aynı anda 4 yaratık
+    creatureSpeed: 110,   // varsayım (px/s)
     bonusFall: 240,       // varsayım (px/s)
     stripedHits: 2,       // varsayım: çizgili blokların işlevi bilinmiyor
     metalBreakable: false, // varsayım: metal bloklar bölüm bitişine sayılmıyor
@@ -84,6 +91,7 @@
   // ---------- durum ----------
   const MENU = ['New Game', 'Continue', 'Exit'];
   const S = {
+    creatures: [], spawnT: 0, introT: 99, fireT: 0,
     mode: 'menu', menuIndex: 0, levelIndex: 0, score: 0, lives: RULES.startLives,
     bricks: [], balls: [], shots: [], effects: [], debris: [], bonuses: [], paddleX: (W - PADDLE.w) / 2, laser: 0,
     timer: 0, paused: false,
@@ -111,7 +119,7 @@
 
   function dockBall() {
     S.balls = [{ x: 0, y: 0, vx: 0, vy: 0, docked: true }];
-    S.shots = []; S.laser = 0; S.bonuses = [];
+    S.shots = []; S.laser = 0; S.bonuses = []; S.fireT = 0;
     syncDocked();
   }
   function syncDocked() {
@@ -123,7 +131,8 @@
     buildLevel();
     S.paddleX = (W - PADDLE.w) / 2;
     dockBall();
-    S.mode = 'intro'; S.timer = 2.2; S.paused = false;
+    S.mode = 'intro'; S.timer = 2.2; S.paused = false; S.introT = 0;
+    S.creatures = []; S.spawnT = RULES.creatureFirst;
     save.write({ levelIndex: index, score: S.score, lives: S.lives });
   }
 
@@ -143,7 +152,7 @@
   }
 
   function launch() {
-    if (S.mode === 'intro') { S.mode = 'play'; S.timer = 0; }
+    if (S.mode === 'intro') { S.mode = 'play'; S.timer = 0; S.introT = 99; }
     if (S.mode !== 'play' || S.paused) return;
     const docked = S.balls.find((b) => b.docked);
     if (docked) {
@@ -168,12 +177,49 @@
     for (let i = 0; i < 6; i++) {
       S.debris.push({ x: x0 + Math.random() * (x1 - x0), y: cy, vx: (Math.random() - 0.5) * 160, vy: 60 + Math.random() * 200, t: 0 });
     }
-    if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy });
+    if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy, kind: Math.random() < RULES.laserShare ? 'laser' : 'score' });
   }
   function hitBrick(br) {
     if (!Number.isFinite(br.hits)) { br.flash = 0.15; return; }
     br.hits--; br.flash = 0.15;
     if (br.hits <= 0) breakBrick(br);
+  }
+
+  // Yaratıklar (videom_parca_01): üstten girip tuğlaların arasında dolaşır;
+  // top ya da lazer değince kırmızı parçalara ayrılıp +50000 verir. Çubukla
+  // etkileşimi görülmedi, zararsız kabul edildi.
+  const CREATURE_R = 30;
+  function spawnCreature() {
+    const x = WALL_L + 80 + Math.random() * (WALL_R - WALL_L - 160);
+    S.creatures.push({ x, y: FIELD_TOP + 10, vx: (Math.random() - 0.5) * RULES.creatureSpeed, vy: RULES.creatureSpeed * 0.6, turn: 1 + Math.random() * 2, t: Math.random() * 6 });
+  }
+  function killCreature(c) {
+    c.dead = true; S.score += RULES.creatureScore;
+    for (let i = 0; i < 8; i++) S.debris.push({ x: c.x, y: c.y, vx: (Math.random() - 0.5) * 260, vy: -80 + Math.random() * 200, t: 0, red: true });
+  }
+  function updateCreatures(dt) {
+    S.spawnT -= dt;
+    if (S.spawnT <= 0) { if (S.creatures.length < RULES.creatureMax) spawnCreature(); S.spawnT = RULES.creatureEvery; }
+    for (const c of S.creatures) {
+      c.t += dt; c.turn -= dt;
+      if (c.turn <= 0) {
+        const a = Math.random() * Math.PI * 2;
+        c.vx = Math.cos(a) * RULES.creatureSpeed; c.vy = Math.sin(a) * RULES.creatureSpeed * 0.7; c.turn = 1 + Math.random() * 2;
+      }
+      c.x += c.vx * dt; c.y += c.vy * dt;
+      if (c.x < WALL_L + CREATURE_R) { c.x = WALL_L + CREATURE_R; c.vx = Math.abs(c.vx); }
+      if (c.x > WALL_R - CREATURE_R) { c.x = WALL_R - CREATURE_R; c.vx = -Math.abs(c.vx); }
+      if (c.y < FIELD_TOP + CREATURE_R) { c.y = FIELD_TOP + CREATURE_R; c.vy = Math.abs(c.vy); }
+      if (c.y > 700) { c.y = 700; c.vy = -Math.abs(c.vy); }
+      for (const b of S.balls) {
+        if (b.docked || c.dead) continue;
+        if ((b.x - c.x) ** 2 + (b.y - c.y) ** 2 < (CREATURE_R + BALL_R) ** 2) { killCreature(c); b.vy = -b.vy; }
+      }
+      for (const sh of S.shots) {
+        if (!sh.dead && !c.dead && Math.abs(sh.x - c.x) < CREATURE_R && Math.abs(sh.y - c.y) < CREATURE_R) { killCreature(c); sh.dead = true; }
+      }
+    }
+    S.creatures = S.creatures.filter((c) => !c.dead);
   }
 
   function collideBall(b, px, py) {
@@ -213,6 +259,7 @@
   function update(dt) {
     if (S.paused) return;
     for (const br of S.bricks) if (br.flash > 0) br.flash -= dt;
+    S.introT += dt;
     if (S.mode === 'intro') { S.timer -= dt; if (S.timer <= 0) S.mode = 'play'; }
     if (S.mode !== 'play' && S.mode !== 'intro') return;
 
@@ -221,7 +268,11 @@
     syncDocked();
     if (S.mode !== 'play') return;
 
-    if (S.laser > 0) S.laser -= dt;
+    if (S.laser > 0) {
+      S.fireT -= dt;
+      if (S.fireT <= 0) { for (const dx of [26, PADDLE.w - 26]) S.shots.push({ x: S.paddleX + dx, y: PADDLE.y - 4 }); S.fireT = RULES.laserInterval; }
+    }
+    updateCreatures(dt);
     for (const b of S.balls) if (!b.docked) stepBall(b, dt);
     S.balls = S.balls.filter((b) => b.y - BALL_R < H);
 
@@ -242,6 +293,7 @@
       bn.y += RULES.bonusFall * dt;
       if (bn.y + 22 >= PADDLE.y && bn.y - 22 <= PADDLE.y + PADDLE.h && bn.x >= S.paddleX - 10 && bn.x <= S.paddleX + PADDLE.w + 10) {
         bn.caught = true; S.score += RULES.bonusScore;
+        if (bn.kind === 'laser') S.laser = Infinity; // gözlem: lazer bölüm sonuna kadar sürüyor
       }
     }
     S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
@@ -264,8 +316,16 @@
     return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
   }
 
+  // Bölüm girişi (videom_parca_01): tuğlalar önce koyu gri, sonra gümüş
+  // çizgili görünür, ardından satır satır gerçek rengine döner.
+  function revealStage(br) {
+    const k = S.introT - br.cells[0][1] * 0.06;
+    return k < 0.25 ? 'dark' : k < 0.75 ? 'silver' : null;
+  }
   function drawBrick(br) {
-    const base = COLORS[br.t];
+    const stage = revealStage(br);
+    const base = stage === 'dark' ? '#3a3a48' : stage === 'silver' ? '#d8dcea' : COLORS[br.t];
+    const striped = stage === 'silver' || (!stage && (br.t.endsWith('-s') || br.t === 'metal'));
     const B = 6; // kabartma kalınlığı
     for (let i = 0; i < br.cells.length; i++) {
       const [c, r] = br.cells[i], rc = br.rects[i];
@@ -275,7 +335,7 @@
       const w = rc.w - (left ? 2 : 0) - (right ? 2 : 0), h = rc.h - (top ? 2 : 0) - (bottom ? 2 : 0);
       ctx.fillStyle = br.flash > 0 ? '#e0402a' : base;
       ctx.fillRect(x, y, w, h);
-      if (br.t.endsWith('-s') || br.t === 'metal') {
+      if (striped) {
         ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
         ctx.strokeStyle = br.t === 'metal' ? 'rgba(255,255,240,.45)' : 'rgba(255,255,255,.38)';
         ctx.lineWidth = 9;
@@ -285,7 +345,7 @@
         }
         ctx.restore();
       }
-      if (br.t === 'metal') {
+      if (br.t === 'metal' && !stage) {
         ctx.fillStyle = 'rgba(70,70,55,.6)';
         for (const [dx, dy] of [[8, 8], [w - 11, 8], [8, h - 11], [w - 11, h - 11]]) ctx.fillRect(x + dx, y + dy, 3, 3);
       }
@@ -327,8 +387,9 @@
       }
       ctx.globalAlpha = 1;
     }
-    ctx.strokeStyle = 'rgba(200,200,210,.75)'; ctx.lineWidth = 4;
+    ctx.lineWidth = 4;
     for (const d of S.debris) {
+      ctx.strokeStyle = d.red ? 'rgba(200,60,30,.85)' : 'rgba(200,200,210,.75)';
       ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.vx * 0.03, d.y - d.vy * 0.03); ctx.stroke();
     }
     for (const bn of S.bonuses) {
@@ -336,7 +397,19 @@
       g.addColorStop(0, 'rgba(220,235,255,.95)'); g.addColorStop(0.7, 'rgba(90,130,220,.55)'); g.addColorStop(1, 'rgba(60,90,200,.25)');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bn.x, bn.y, 22, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(210,225,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = '#f0c840'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = bn.kind === 'laser' ? '#f0c840' : '#2a3a90'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
+    }
+    for (const c of S.creatures) drawCreature(c);
+  }
+
+  function drawCreature(c) {
+    const bob = Math.sin(c.t * 6) * 3;
+    for (const [dy, rx, ry, col] of [[14, 30, 13, '#6a2a10'], [2, 23, 11, '#83381a'], [-9, 15, 9, '#9a4622'], [-18, 6, 6, '#b05428']]) {
+      ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(c.x, c.y + dy + bob, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    for (const dx of [-9, 9]) {
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(c.x + dx, c.y + 10 + bob, 7, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(c.x + dx + Math.sign(c.vx) * 2, c.y + 11 + bob, 3, 0, Math.PI * 2); ctx.fill();
     }
   }
 
