@@ -28,7 +28,7 @@
 
   const COLORS = {
     red: '#d9542f', blue: '#4b86da', yellow: '#ecd23f', green: '#4dbd3a', purple: '#c48fe2',
-    'red-s': '#d83a2c', 'blue-s': '#7fb2f0', 'yellow-s': '#f2d22e', 'purple-s': '#d7a8f2', 'green-s': '#6cbb3a', 'silver-s': '#c9cde0', metal: '#bcb99c',
+    'red-s': '#d83a2c', 'blue-s': '#7fb2f0', 'yellow-s': '#f2d22e', 'purple-s': '#a9a2d8', 'violet-s': '#b45ad6', 'green-s': '#6cbb3a', 'silver-s': '#c9cde0', metal: '#bcb99c',
   };
 
   const canvas = document.querySelector('canvas');

@@ -76,3 +76,10 @@ Güncelleme — kullanıcının ikinci Stage 1 karesi (`user-stage-01b.jpg`, pua
 - Stage 4'ün üst sırası Stage 1–3'ün üst sırasından **bir sıra yukarıda**. Izgaranın satır 0'ı HUD'ın hemen altına alındı (`y0 = 73.5`); Stage 1–3 satır 1'den başlıyor.
 - Stage 4 kuleleri ızgaraya göre çeyrek hücre kayık (c = 2.25 / 4.5, ayna 11.5 / 13.75). Karede satır başına birkaç piksellik dışa kayma var; ölçüm/görüntü hatası sayıldı.
 - Puan farkları (Stage 1→2: 54000, 2→3: 190800, 3→4: 268900) tuğla sayısıyla açıklanamıyor; bonuslar/nesneler ayrıca incelenmeli.
+| 5 | `user-stage-05.jpg` | X 5 / 00538200 | Elmas halka: sol çizgili lila 2'likler, sağ kırmızı/lila çizgili kareler, ortada metal kare |
+| 6 | `user-stage-06.jpg` | X 4 / 00868800 | Köşe kareler, çizgili merdivenler, dört L'den iki halka, içte mavi kareler (çeyrek hücre kayık) |
+
+- Stage 4 → 5 arasında can X 4 → X 5: bir ekstra can kazanılmış (nedeni bilinmiyor).
+- Çizgili bloklar Stage 5/6'da oyun sırasında da (`0120.jpg`) çizgili görünüyor; bunlar gerçek blok türü. Stage 1/2'deki çizgi ise giriş parıltısıydı.
+- İki farklı çizgili mor var: mavimsi lila (`purple-s`) ve koyu eflatun (`violet-s`, Stage 6 sol halka).
+- `0120.jpg` Stage 5'e benziyor ama sol yay farklı (mavi ve turuncu kareler). Tuğlaların vurulunca renk değiştirip değiştirmediği henüz bilinmiyor.
