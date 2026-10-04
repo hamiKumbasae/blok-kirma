@@ -17,8 +17,10 @@
     paddleScore: 100,     // gözlem (yüksek): birinci.mov, top çubuğa her çarpışta +100
     bonusScore: 10000,    // gözlem (yüksek): birinci.mov, baloncuk yakalanınca +10000
     bonusChance: 0.2,     // varsayım: Stage 2'de ~46 tuğladan ~10 baloncuk (videom_parca_01)
-    laserShare: 0.3,      // varsayım: sarı çekirdekli (lazer) baloncuk oranı
-    lifeShare: 0.1,       // varsayım: ekstra can baloncuğu oranı (Stage 7'de X2→X3, +11000 gözlendi)
+    // Baloncuk türleri: lazer, can (gözlem), 3'lü top ve genişlik (kullanıcının
+    // hatırladığı). Oranlar varsayım.
+    bonusShares: { laser: 0.22, triple: 0.2, wide: 0.2, life: 0.08 },
+    wideW: 290,           // varsayım: geniş çubuk (normal 194)
     laserInterval: 0.3,   // varsayım (s): lazer çubuk kendiliğinden çift ışın atar
     creatureScore: 50000, // gözlem (yüksek): yaratık yok edildiği karede +50000
     creatureFirst: 2.5,   // gözlem (orta): Stage 1'de ilk yaratık ~2.5 sn sonra
@@ -40,7 +42,7 @@
     laserTime: 12,        // varsayım (s), yalnızca debug
   };
 
-  const PADDLE = { w: 194, h: 30, y: 893 };   // gözlem: 0010/0035 kareleri
+  const PADDLE = { w: 194, baseW: 194, h: 30, y: 893 };   // gözlem: 0010/0035 kareleri
   const BALL_R = 16;                           // gözlem: ~34 px çap
 
   const COLORS = {
@@ -133,7 +135,7 @@
 
   function dockBall() {
     S.balls = [{ x: 0, y: 0, vx: 0, vy: 0, docked: true }];
-    S.shots = []; S.laser = 0; S.bonuses = []; S.fireT = 0;
+    S.shots = []; S.laser = 0; S.bonuses = []; S.fireT = 0; setPaddleW(PADDLE.baseW);
     syncDocked();
   }
   function syncDocked() {
@@ -201,8 +203,25 @@
     if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy, kind: pickBonusKind() });
   }
   function pickBonusKind() {
-    const r = Math.random();
-    return r < RULES.laserShare ? 'laser' : r < RULES.laserShare + RULES.lifeShare ? 'life' : 'score';
+    let r = Math.random();
+    for (const [k, p] of Object.entries(RULES.bonusShares)) { if (r < p) return k; r -= p; }
+    return 'score';
+  }
+  function setPaddleW(w) {
+    const cx = S.paddleX + PADDLE.w / 2; PADDLE.w = w;
+    S.paddleX = Math.max(WALL_L, Math.min(WALL_R - w, cx - w / 2));
+  }
+  // 3'lü top: her uçan toptan ±20° açıyla iki top daha çıkar.
+  function tripleBalls() {
+    const add = [];
+    for (const b of S.balls) {
+      if (b.docked) continue;
+      for (const a of [-0.35, 0.35]) {
+        const c = Math.cos(a), sn = Math.sin(a);
+        add.push({ x: b.x, y: b.y, vx: b.vx * c - b.vy * sn, vy: b.vx * sn + b.vy * c, docked: false });
+      }
+    }
+    S.balls.push(...add);
   }
   function hitBrick(br) {
     if (!Number.isFinite(br.hits)) { br.flash = 0.15; return; }
@@ -343,7 +362,7 @@
       s.y -= RULES.shotSpeed * dt;
       for (const br of S.bricks) {
         if (!br.alive || s.dead) continue;
-        if (br.rects.some((r) => s.x >= r.x && s.x <= r.x + r.w && s.y >= r.y && s.y <= r.y + r.h)) { hitBrick(br); s.dead = true; }
+        if (br.rects.some((r) => s.x + 7 >= r.x && s.x - 7 <= r.x + r.w && s.y >= r.y && s.y - 20 <= r.y + r.h)) { hitBrick(br); s.dead = true; }
       }
     }
     S.shots = S.shots.filter((s) => !s.dead && s.y > FIELD_TOP);
@@ -358,6 +377,8 @@
         bn.caught = true; S.score += RULES.bonusScore;
         if (bn.kind === 'laser') S.laser = Infinity; // gözlem: lazer bölüm sonuna kadar sürüyor
         if (bn.kind === 'life') S.lives++;
+        if (bn.kind === 'triple') tripleBalls();
+        if (bn.kind === 'wide') setPaddleW(RULES.wideW);
       }
     }
     S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
@@ -462,7 +483,16 @@
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bn.x, bn.y, 22, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(210,225,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
       // Can baloncuğunun görünüşü doğrulanmadı; yeşil çekirdek seçildi.
-      ctx.fillStyle = bn.kind === 'laser' ? '#f0c840' : bn.kind === 'life' ? '#5fd848' : '#2a3a90'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
+      if (bn.kind === 'triple') {
+        ctx.fillStyle = '#ffffff';
+        for (const [dx, dy] of [[-6, 4], [6, 4], [0, -6]]) { ctx.beginPath(); ctx.arc(bn.x + dx, bn.y + dy, 5, 0, Math.PI * 2); ctx.fill(); }
+      } else if (bn.kind === 'wide') {
+        ctx.fillStyle = '#7dff5a'; ctx.fillRect(bn.x - 13, bn.y - 4, 26, 8);
+        ctx.fillStyle = '#ffcf3a'; ctx.fillRect(bn.x - 15, bn.y - 6, 4, 12); ctx.fillRect(bn.x + 11, bn.y - 6, 4, 12);
+      } else {
+        ctx.fillStyle = bn.kind === 'laser' ? '#f0c840' : bn.kind === 'life' ? '#ff5a8a' : '#2a3a90';
+        ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
+      }
     }
     for (const c of S.creatures) drawCreature(c);
   }
@@ -476,6 +506,19 @@
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(c.x + dx, c.y + 10 + bob, 7, 6, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(c.x + dx + Math.sign(c.vx) * 2, c.y + 11 + bob, 3, 0, Math.PI * 2); ctx.fill();
     }
+  }
+
+  // Lazer ışını: videodaki gibi kalın, parlak altın çekirdekli uzun iz.
+  function drawShots() {
+    ctx.save();
+    for (const s of S.shots) {
+      const len = 110, g = ctx.createLinearGradient(0, s.y - len, 0, s.y);
+      g.addColorStop(0, 'rgba(255,170,40,0)'); g.addColorStop(0.35, 'rgba(255,190,60,.85)'); g.addColorStop(1, 'rgba(255,240,170,1)');
+      ctx.shadowColor = 'rgba(255,180,40,.9)'; ctx.shadowBlur = 18;
+      ctx.fillStyle = g; ctx.fillRect(s.x - 7, s.y - len, 14, len);
+      ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,230,.95)'; ctx.fillRect(s.x - 2.5, s.y - len * 0.7, 5, len * 0.7);
+    }
+    ctx.restore();
   }
 
   function drawBall(b) {
@@ -602,7 +645,7 @@
     for (const br of S.bricks) if (br.alive) drawBrick(br);
     drawEffects();
     ctx.fillStyle = '#fff6c0';
-    for (const s of S.shots) ctx.fillRect(s.x - 3, s.y - 26, 6, 26);
+    drawShots();
     drawPaddle();
     for (const b of S.balls) drawBall(b);
     if (S.mode === 'intro') drawStageBanner();
