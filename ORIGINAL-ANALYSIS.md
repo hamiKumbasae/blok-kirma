@@ -158,3 +158,13 @@ Uzun videoda "▶▶4x" etiketsiz bölümler 1x, etiketli bölümler 4x. 0.25x k
 | Baloncuklar yavaş düşüyor (~110 px/s) | | orta |
 | Menü öncesi cihaz menüsü: "Game → ExBlock / Poker / BricksLay / Bomb Hexa" | trim_01 0:00 | yüksek |
 | Turuncu parlak top + hızlı alev mermisi (tuğla kırıyor, +1000 / L için +2100); tetikleyen ödül görülmedi → **uygulanmadı** | trim_09 1:28–1:52 | düşük |
+
+## `trim_11`–`trim_23` (0.25x kayıt; Stage 7 sonu → Stage 14 başı)
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| Stage 11: mavi kareler 4 sütun aralıklı çapraz çizgilerle başlıyor; oyun sırasında hepsi yatayda kayıyor (çiftler birbirine yaklaşıp uzaklaşıyor). Oyunda yatay seken kareler olarak yaklaşık uygulandı | `trim-stage-11-intro.jpg`, trim_18 | orta |
+| Stage 12: metal iskelet (6 dikey, 5 yatay, 4 kare), sarı/çizgili lila/sarı üst sıra, çizgili kırmızı orta; 4 sarı kare serbest dolaşıyor | `trim-stage-12-start.jpg` | yüksek |
+| Stage 13: turuncu 2×2, mor sütunlu piramit (çizgili kırmızı tepe, çizgili yeşil/lila iç), metal basamaklar, yeşil kaktüs, sarı ve çizgili lila tam sıralar (72 blok) | `trim-stage-13-start.jpg` | yüksek |
+| Stage 14: iki yanda çizgili basamak, ortada küçük piramit, iki kayan mor parça, altta iki karışık tam sıra | `trim-stage-14-start.jpg` | yüksek (yalnız başlangıç) |
+| Stage 14'te can X1 → X0 düştü, kayıt Continue ile 01979000 puanla yeni bir haritaya geçiyor (kullanıcı kaydı) | trim_23 0:36 | gözlem |

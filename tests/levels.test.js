@@ -8,14 +8,14 @@ const assert = require('assert');
 const ctx = {};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/levels.js'), 'utf8'), { globalThis: ctx });
 const levels = [...ctx.EXBLOCK_LEVELS, ...ctx.EXBLOCK_UNPLACED];
-assert.strictEqual(ctx.EXBLOCK_LEVELS.map((l) => l.stage).join(','), '1,2,3,4,5,6,7,8,9,10', 'oyun Stage 1-10 sırasıyla');
+assert.strictEqual(ctx.EXBLOCK_LEVELS.map((l) => l.stage).join(','), '1,2,3,4,5,6,7,8,9,10,11,12,13,14', 'oyun Stage 1-14 sırasıyla');
 const grid = ctx.EXBLOCK_GRID;
 
 const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b.c + (i % b.w), b.r + Math.floor(i / b.w)]);
 const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'blue-s', 'yellow-s', 'purple-s', 'violet-s', 'green-s', 'silver-s', 'metal']);
 
 // Referans karelerinde sayılan blok adetleri.
-const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'stage-7': 29, 'stage-8': 69, 'stage-9': 44, 'stage-10': 48, 'green-symmetric': 57 };
+const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'stage-7': 29, 'stage-8': 69, 'stage-9': 44, 'stage-10': 48, 'stage-11': 43, 'stage-12': 23, 'stage-13': 72, 'stage-14': 32, 'green-symmetric': 57 };
 
 for (const lv of levels) {
   const seen = new Map();
@@ -30,7 +30,7 @@ for (const lv of levels) {
   }
   assert.strictEqual(lv.bricks.length, expected[lv.id], `${lv.id}: blok sayısı`);
   // Spiral, Stage 5 ve 6 dışındaki gözlenen haritalar yatayda simetrik (şekil olarak).
-  if (['spiral', 'stage-5', 'stage-6', 'stage-8', 'stage-10'].includes(lv.id)) { console.log(`ok ${lv.id}: ${lv.bricks.length} blok, ${seen.size} hücre`); continue; }
+  if (['spiral', 'stage-5', 'stage-6', 'stage-8', 'stage-10', 'stage-11', 'stage-12', 'stage-13', 'stage-14'].includes(lv.id)) { console.log(`ok ${lv.id}: ${lv.bricks.length} blok, ${seen.size} hücre`); continue; }
   for (const key of seen.keys()) {
     const [c, r] = key.split(',').map(Number);
     assert(seen.has(+(grid.cols - 1 - c).toFixed(2) + ',' + r), `${lv.id}: simetri bozuk ${key}`);
