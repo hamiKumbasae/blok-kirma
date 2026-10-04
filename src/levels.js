@@ -8,7 +8,7 @@
 //
 // Türler:
 //   red, blue, yellow, green, purple      → düz renkli tuğla
-//   red-s, blue-s, yellow-s, purple-s,
+//   red-s, blue-s, yellow-s, purple-s,  (blue-s: Stage 16 alt sıra)
 //   violet-s, green-s, silver-s           → çizgili/parlak görünümlü tuğla
 //   metal                                 → perçinli gri-bej blok
 // Çizgili ve metal blokların dayanıklılığı videodan DOĞRULANMADI; davranış
@@ -245,6 +245,87 @@
     ...['metal', 'red', 'metal', 'blue', 'metal', 'yellow', 'metal', 'purple', 'metal'].map((t, i) => R(t, i * 2, 6)),
   ];
 
+  // Stage 15–21 — kayit_trim videoları (0.25x), temiz başlangıç kareleri
+  // reference-frames/kayit-stage-NN-start.jpg.
+  const s15band = (r) => [R('green', 2, r), R('green', 4, r), R('green', 6, r), R('blue', 8, r), R('green', 10, r), R('green', 12, r), R('green', 14, r)];
+  const s15side = (r) => [R('green', 2, r, 1), R('metal', 3, r), R('green', 5, r), R('blue', 7, r, 1), R('blue', 10, r, 1), R('green', 11, r), R('metal', 13, r), R('green', 15, r, 1)];
+  const stage15 = [
+    ...[1, 16].flatMap((c) => [R('red-s', c, 1, 1), V('red-s', c, 2), V('red-s', c, 4), V('red-s', c, 6)]),
+    ...s15band(1), ...s15side(2),
+    R('green', 2, 3), R('green', 4, 3), R('blue', 6, 3, 1), R('blue', 11, 3, 1), R('green', 12, 3), R('green', 14, 3),
+    R('purple-s', 2, 4), R('purple-s', 4, 4), R('yellow', 8, 4), R('purple-s', 12, 4), R('purple-s', 14, 4),
+    R('green', 2, 5), R('green', 4, 5), R('blue', 6, 5, 1), R('metal', 7, 5), R('metal', 9, 5), R('blue', 11, 5, 1), R('green', 12, 5), R('green', 14, 5),
+    ...s15side(6), ...s15band(7),
+  ];
+
+  const stage16 = [
+    ...row('green', [6, 8, 10], 0),
+    R('green', 5, 1), ...row('red', [7, 9], 1), R('green', 11, 1),
+    R('green', 4, 2), ...row('red', [6, 8, 10], 2), R('green', 12, 2),
+    R('green', 3, 3), R('red', 5, 3), R('metal', 7, 3), R('metal', 9, 3), R('red', 11, 3), R('green', 13, 3),
+    R('green', 2, 4), ...row('red', [4, 6, 8, 10, 12], 4), R('green', 14, 4),
+    R('green', 1, 5), ...row('red', [3, 5, 7, 9, 11, 13], 5), R('green', 15, 5),
+    ...row('blue', [0, 2, 4], 6), R('metal', 6, 6), R('red', 8, 6), R('metal', 10, 6), ...row('blue', [12, 14, 16], 6),
+    ...[0, 4, 8, 12, 16].map((c) => R('violet-s', c, 7)), ...[2, 6, 10, 14].map((c) => R('blue-s', c, 7)),
+  ];
+
+  // Stage 17 — kalp ve mavi kareli kalp çizgisi. Kenarlar çizgili kırmızı.
+  const stage17 = [
+    R('red-s', 4, 1), R('red-s', 7, 1),
+    ...[[3, 2], [6, 2], [9, 2], [2, 5], [10, 5], [3, 6], [9, 6], [4, 7], [8, 7], [5, 8], [7, 8], [6, 9]].map(([c, r]) => R('red-s', c, r, 1)),
+    V('red-s', 2, 3), V('red-s', 10, 3),
+    V('red', 3, 3), R('red', 3, 5, 1), V('red', 4, 2), V('red', 4, 4), R('red', 4, 6, 1),
+    V('red', 5, 2), V('red', 5, 4), V('red', 5, 6), V('red', 6, 3), V('red', 6, 5), V('red', 6, 7),
+    V('red', 7, 2), V('red', 7, 4), V('red', 7, 6), V('red', 8, 2), V('red', 8, 4), R('red', 8, 6, 1),
+    V('red', 9, 3), R('red', 9, 5, 1),
+    R('blue', 12, 3), R('blue', 11, 4, 1), R('blue', 14, 4, 1), V('blue', 15, 5), R('blue', 15, 7, 1),
+    ...[[8, 8], [14, 8], [9, 9], [13, 9], [10, 10], [12, 10], [11, 11]].map(([c, r]) => R('blue', c, r, 1)),
+  ];
+
+  // Stage 18 — metal yüz/robot: çizgili lila sütunlar, metal kemer, altta
+  // çizgili kırmızı tam sıra. Ortadaki metal parçalar yarım hücre kayık.
+  const stage18 = [
+    ...row('metal', [6, 8, 10], 0),
+    R('metal', 6, 1, 1), R('red', 7, 1, 1), R('purple-s', 8, 1), R('red', 10, 1, 1), R('metal', 11, 1, 1),
+    ...[1, 2, 3, 4].flatMap((r) => [R('purple-s', 3, r), R('purple-s', 13, r)]),
+    R('purple-s', 7, 2), R('purple-s', 9, 2),
+    R('metal', 6.5, 3, 1), R('purple-s', 8, 3), R('metal', 10.5, 3, 1),
+    R('metal', 6.5, 4), R('metal', 9.5, 4),
+    R('metal', 1.1, 5, 1), V('metal', 7.75, 5), V('metal', 9.25, 5), R('metal', 15.8, 5, 1),
+    ...row('purple-s', [1, 3, 5, 11, 13, 15], 6),
+    ...row('red-s', [0, 2, 4, 6, 8, 10, 12, 14, 16], 7),
+  ];
+
+  // Stage 19 — iki tek sıra (yeşil + çizgili lila), dikey metal eksen, altta
+  // kırmızı + çizgili lila tek sıralar.
+  const singles = (t, from, to, r) => Array.from({ length: to - from + 1 }, (_, i) => R(t, from + i, r, 1));
+  const stage19 = [
+    V('metal', 8, 0), ...singles('green', 0, 17, 2), ...singles('purple-s', 0, 17, 3), V('metal', 8, 4),
+    ...singles('red', 2, 15, 6), ...singles('purple-s', 2, 15, 7),
+  ];
+
+  // Stage 20 — kırmızı kanat/merdiven, ortada sarı U içinde çizgili yeşil, yanlarda
+  // kırmızı köşeli parçalar (yarım hücre kayık), altta mavi ve metal.
+  const stage20 = [
+    R('red-s', 0, 1), R('red-s', 2, 1, 1), R('red-s', 15, 1, 1), R('red-s', 16, 1),
+    R('red', 1, 2), R('red-s', 3, 2), R('red-s', 5, 2, 1), R('red-s', 12, 2, 1), R('red-s', 13, 2), R('red', 15, 2),
+    R('red', 4, 3), R('red-s', 6, 3), R('metal', 8, 3), R('red-s', 10, 3), R('red', 12, 3),
+    R('red', 1.3, 4), R('yellow', 7, 4), R('yellow', 9, 4), R('red', 14.5, 4),
+    R('red', 0.8, 5), R('yellow', 7, 5, 1), R('green-s', 8, 5, 1), R('green-s', 9, 5, 1), R('yellow', 10, 5, 1), R('red', 15.4, 5),
+    R('red', 1.8, 6, 1), R('red', 4, 6), R('red-s', 6, 6), R('metal', 8, 6), R('red-s', 10, 6), R('red', 12, 6), R('red', 15.4, 6, 1),
+    R('red', 1, 7), R('red-s', 3, 7), R('red-s', 5, 7, 1), R('metal', 6, 7), R('metal', 10, 7), R('red-s', 12, 7, 1), R('red-s', 13, 7), R('red', 15, 7),
+    R('blue', 0, 8), R('blue', 2, 8, 1), R('blue', 3, 8), R('blue', 13, 8), R('blue', 15, 8, 1), R('blue', 16, 8),
+    R('metal', 2, 9), R('metal', 14, 9),
+  ];
+
+  // Stage 21 — çizgili lila elmas; ortadan geçen mavi sıra elmastan geniş ve
+  // aralıklı (konumlar ölçüldü).
+  const stage21 = [
+    ...row('purple-s', [7, 9], 2), ...row('purple-s', [5, 7, 9, 11], 3), ...row('purple-s', [3, 5, 7, 9, 11, 13], 4),
+    ...[0.85, 2.95, 5.05, 7.2, 9.2, 11.3, 13.4, 15.5].map((c) => R('blue', c, 5)),
+    ...row('purple-s', [3, 5, 7, 9, 11, 13], 6), ...row('purple-s', [5, 7, 9, 11], 7), ...row('purple-s', [7, 9], 8),
+  ];
+
   root.EXBLOCK_LEVELS = [
     { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: down(stage1) },
     { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: down(stage2) },
@@ -260,6 +341,13 @@
     { id: 'stage-12', stage: 12, name: 'Metal iskelet', source: 'reference-frames/trim-stage-12-start.jpg', confidence: 'yüksek', bricks: stage12 },
     { id: 'stage-13', stage: 13, name: 'Piramit ve kaktüs', source: 'reference-frames/trim-stage-13-start.jpg', confidence: 'yüksek', bricks: stage13 },
     { id: 'stage-14', stage: 14, name: 'Basamaklı sıra', source: 'reference-frames/trim-stage-14-start.jpg', confidence: 'yüksek (yalnız başlangıç görüldü)', bricks: stage14 },
+    { id: 'stage-15', stage: 15, name: 'Yeşil çerçeve', source: 'reference-frames/kayit-stage-15-start.jpg', confidence: 'yüksek', bricks: stage15 },
+    { id: 'stage-16', stage: 16, name: 'Piramit', source: 'reference-frames/kayit-stage-16-start.jpg', confidence: 'yüksek', bricks: stage16 },
+    { id: 'stage-17', stage: 17, name: 'Kalp', source: 'reference-frames/kayit-stage-17-start.jpg', confidence: 'orta-yüksek (iç dikey düzen)', bricks: stage17 },
+    { id: 'stage-18', stage: 18, name: 'Robot yüz', source: 'reference-frames/kayit-stage-18-start.jpg', confidence: 'orta (metal parçalar)', bricks: stage18 },
+    { id: 'stage-19', stage: 19, name: 'Tek sıralar', source: 'reference-frames/kayit-stage-19-start.jpg', confidence: 'yüksek', bricks: stage19 },
+    { id: 'stage-20', stage: 20, name: 'Kanatlar', source: 'reference-frames/kayit-stage-20-start.jpg', confidence: 'orta (yan köşeli parçalar)', bricks: stage20 },
+    { id: 'stage-21', stage: 21, name: 'Elmas ve kuşak', source: 'reference-frames/kayit-stage-21-start.jpg', confidence: 'yüksek', bricks: stage21 },
   ];
   // Sırası bilinmeyen haritalar: oyunda kullanılmaz, Stage karesi gelince
   // doğru yere taşınır.

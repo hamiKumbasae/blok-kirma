@@ -98,10 +98,10 @@
   const MENU = ['New Game', 'Continue', 'Stage Select', 'Exit'];
   // Stage Select bu yeniden yapıma eklendi; orijinal menüde yok.
   const MENU_Y0 = 520, MENU_DY = 100;
-  const SEL = { cols: 4, x0: 42, y0: 110, w: 280, h: 190, gx: 20, gy: 10 };
+  const SEL = { cols: 6, x0: 39, y0: 110, w: 186, h: 160, gx: 14, gy: 12 };
   const S = {
     creatures: [], spawnT: 0, introT: 99, fireT: 0,
-    selIndex: 0,
+    selIndex: 0, selLimit: 0, selFrom: 'menu',
     mode: 'menu', menuIndex: 0, levelIndex: 0, score: 0, lives: RULES.startLives,
     bricks: [], balls: [], shots: [], effects: [], debris: [], bonuses: [], paddleX: (W - PADDLE.w) / 2, laser: 0,
     timer: 0, paused: false,
@@ -147,14 +147,19 @@
     dockBall();
     S.mode = 'intro'; S.timer = 2.2; S.paused = false; S.introT = 0;
     S.creatures = []; S.spawnT = RULES.creatureFirst; S.levelT = 0;
-    save.write({ levelIndex: index, score: S.score, lives: S.lives });
+    save.write({ levelIndex: index, score: S.score, lives: S.lives, max: Math.max(index, save.read()?.max ?? 0) });
   }
 
   function newGame() { S.score = 0; S.lives = RULES.startLives; startLevel(0); }
+  // Orijinalde Continue, ulaşılan en yüksek bölüme kadar "Select Stage Using
+  // V+/V-, Press OK to Start Game" ekranı açar; seçilen bölüm 0 puan ve 5 canla
+  // başlar (kayit_trim_13–14).
   function continueGame() {
     const d = save.read();
-    if (!d || !LEVELS[d.levelIndex]) return false;
-    S.score = d.score; S.lives = d.lives; startLevel(d.levelIndex);
+    if (!d) return false;
+    S.selLimit = Math.min(LEVELS.length - 1, d.max ?? d.levelIndex);
+    S.selIndex = Math.min(d.levelIndex, S.selLimit);
+    S.mode = 'select'; S.selFrom = 'continue';
     return true;
   }
 
@@ -162,7 +167,7 @@
     const item = MENU[S.menuIndex];
     if (item === 'New Game') newGame();
     else if (item === 'Continue') continueGame();
-    else if (item === 'Stage Select') S.mode = 'select';
+    else if (item === 'Stage Select') { S.mode = 'select'; S.selFrom = 'menu'; S.selLimit = LEVELS.length - 1; }
     else S.mode = 'exit';
   }
 
@@ -360,7 +365,7 @@
     if (S.balls.length === 0) {
       if (S.lives === 0) { S.mode = 'gameover'; save.clear(); return; }
       S.lives--; dockBall();
-      save.write({ levelIndex: S.levelIndex, score: S.score, lives: S.lives });
+      save.write({ levelIndex: S.levelIndex, score: S.score, lives: S.lives, max: Math.max(S.levelIndex, save.read()?.max ?? 0) });
     }
     if (S.bricks.every((b) => !b.alive || !b.required)) {
       if (S.levelIndex + 1 < LEVELS.length) startLevel(S.levelIndex + 1);
@@ -571,21 +576,22 @@
     return { x: SEL.x0 + col * (SEL.w + SEL.gx), y: SEL.y0 + row * (SEL.h + SEL.gy) };
   }
   function drawSelect() {
-    outlinedText('Stage Select', W / 2, 70, 56, '#ffd84a', 'center');
+    const cont = S.selFrom === 'continue';
+    outlinedText(cont ? 'Select Stage Using V+/V-' : 'Stage Select', W / 2, 70, cont ? 46 : 56, '#ffd84a', 'center');
     LEVELS.forEach((lv, i) => {
       const { x, y } = selRect(i), on = i === S.selIndex;
+      ctx.globalAlpha = i > S.selLimit ? 0.25 : 1;
       ctx.drawImage(thumb(i), x, y);
       ctx.strokeStyle = on ? '#ffd84a' : 'rgba(200,195,255,.45)'; ctx.lineWidth = on ? 6 : 2;
       ctx.strokeRect(x, y, SEL.w, SEL.h);
-      outlinedText('Stage ' + lv.stage, x + 12, y + SEL.h - 20, 26, on ? '#ffd84a' : '#f4ecb0');
-      ctx.font = '600 17px Arial, sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#c9c3f2';
-      ctx.fillText(lv.name, x + SEL.w - 10, y + SEL.h - 18);
+      outlinedText('Stage ' + lv.stage, x + 10, y + SEL.h - 18, 24, on ? '#ffd84a' : '#f4ecb0');
+      ctx.globalAlpha = 1;
     });
     ctx.font = '600 20px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#c9c3f2';
-    ctx.fillText('Tıkla ya da oklar + Enter · Esc: menü', W / 2, H - 14);
+    ctx.fillText(cont ? 'Press OK to Start Game · Esc: menü' : 'Tıkla ya da oklar + Enter · Esc: menü', W / 2, H - 14);
   }
   function startStage(i) { S.score = 0; S.lives = RULES.startLives; startLevel(i); }
-  function selMove(d) { S.selIndex = Math.max(0, Math.min(LEVELS.length - 1, S.selIndex + d)); }
+  function selMove(d) { S.selIndex = Math.max(0, Math.min(S.selLimit, S.selIndex + d)); }
 
   function draw() {
     ctx.drawImage(bg, 0, 0);
@@ -674,7 +680,7 @@
     }
     if (S.mode === 'select') {
       const i = LEVELS.findIndex((_, j) => { const r = selRect(j); return p.x >= r.x && p.x <= r.x + SEL.w && p.y >= r.y && p.y <= r.y + SEL.h; });
-      if (i >= 0) { S.selIndex = i; startStage(i); }
+      if (i >= 0 && i <= S.selLimit) { S.selIndex = i; startStage(i); }
       return;
     }
     dragging = true; canvas.setPointerCapture(e.pointerId);
@@ -700,7 +706,7 @@
   // #stage5 gibi bir bağlantı doğrudan o bölümü açar; #stages seçim ekranını.
   const hashStage = /^#stage(\d+)$/.exec(location.hash);
   if (hashStage) { const i = LEVELS.findIndex((l) => l.stage === +hashStage[1]); if (i >= 0) startStage(i); }
-  else if (location.hash === '#stages') S.mode = 'select';
+  else if (location.hash === '#stages') { S.mode = 'select'; S.selLimit = LEVELS.length - 1; }
   }
   requestAnimationFrame(frame);
 

@@ -8,21 +8,21 @@ const assert = require('assert');
 const ctx = {};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/levels.js'), 'utf8'), { globalThis: ctx });
 const levels = [...ctx.EXBLOCK_LEVELS, ...ctx.EXBLOCK_UNPLACED];
-assert.strictEqual(ctx.EXBLOCK_LEVELS.map((l) => l.stage).join(','), '1,2,3,4,5,6,7,8,9,10,11,12,13,14', 'oyun Stage 1-14 sırasıyla');
+assert.strictEqual(ctx.EXBLOCK_LEVELS.map((l) => l.stage).join(','), '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21', 'oyun Stage 1-21 sırasıyla');
 const grid = ctx.EXBLOCK_GRID;
 
 const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b.c + (i % b.w), b.r + Math.floor(i / b.w)]);
 const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'blue-s', 'yellow-s', 'purple-s', 'violet-s', 'green-s', 'silver-s', 'metal']);
 
 // Referans karelerinde sayılan blok adetleri.
-const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'stage-7': 29, 'stage-8': 69, 'stage-9': 44, 'stage-10': 48, 'stage-11': 43, 'stage-12': 23, 'stage-13': 72, 'stage-14': 32, 'green-symmetric': 57 };
+const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'stage-7': 29, 'stage-8': 69, 'stage-9': 44, 'stage-10': 48, 'stage-11': 43, 'stage-12': 23, 'stage-13': 72, 'stage-14': 32, 'stage-15': 57, 'stage-16': 51, 'stage-17': 47, 'stage-18': 42, 'stage-19': 66, 'stage-20': 48, 'stage-21': 32, 'green-symmetric': 57 };
 
 for (const lv of levels) {
   const seen = new Map();
   for (const b of lv.bricks) {
     assert(TYPES.has(b.t), `${lv.id}: bilinmeyen tür ${b.t}`);
     for (const [c, r] of cellsOf(b)) {
-      assert(c >= 0 && c < grid.cols && r >= 0 && r < 11, `${lv.id}: alan dışı hücre ${c},${r}`);
+      assert(c >= 0 && c < grid.cols && r >= 0 && r < 12, `${lv.id}: alan dışı hücre ${c},${r}`);
       const key = +c.toFixed(2) + ',' + r;
       assert(!seen.has(key), `${lv.id}: çakışan hücre ${key}`);
       seen.set(key, b.t);
@@ -30,7 +30,7 @@ for (const lv of levels) {
   }
   assert.strictEqual(lv.bricks.length, expected[lv.id], `${lv.id}: blok sayısı`);
   // Spiral, Stage 5 ve 6 dışındaki gözlenen haritalar yatayda simetrik (şekil olarak).
-  if (['spiral', 'stage-5', 'stage-6', 'stage-8', 'stage-10', 'stage-11', 'stage-12', 'stage-13', 'stage-14'].includes(lv.id)) { console.log(`ok ${lv.id}: ${lv.bricks.length} blok, ${seen.size} hücre`); continue; }
+  if (['spiral', 'stage-5', 'stage-6', 'stage-8', 'stage-10', 'stage-11', 'stage-12', 'stage-13', 'stage-14', 'stage-15', 'stage-16', 'stage-17', 'stage-18', 'stage-19', 'stage-20', 'stage-21'].includes(lv.id)) { console.log(`ok ${lv.id}: ${lv.bricks.length} blok, ${seen.size} hücre`); continue; }
   for (const key of seen.keys()) {
     const [c, r] = key.split(',').map(Number);
     assert(seen.has(+(grid.cols - 1 - c).toFixed(2) + ',' + r), `${lv.id}: simetri bozuk ${key}`);
