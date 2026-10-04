@@ -118,7 +118,7 @@
   // Stage 6 — reference-frames/user-stage-06.jpg ("Stage 6"). Köşelerde
   // çizgili kırmızı kareler, iki yanda çizgili merdiven, ortada üç renk +
   // mor, altta dört L parçadan iki halka. Halkaların içindeki mavi kareler
-  // boşluğun soluna çeyrek hücre kayık duruyor (c = 5.25 / 11.25).
+  // hareketli: boşlukta kayar, halka kırılınca alanda dolaşır (videom_parca_02).
   const ring = (t, c, r) => [
     L(t, [[c, r], [c + 1, r], [c, r + 1]]), L(t, [[c + 2, r], [c + 3, r], [c + 3, r + 1]]),
     L(t, [[c, r + 2], [c, r + 3], [c + 1, r + 3]]), L(t, [[c + 3, r + 2], [c + 2, r + 3], [c + 3, r + 3]]),
@@ -129,7 +129,7 @@
     R('yellow-s', 2, 2), R('yellow-s', 14, 2),
     R('green-s', 3, 3), R('green-s', 13, 3),
     ...ring('violet-s', 4, 4), ...ring('red-s', 10, 4),
-    R('blue', 5.25, 5, 1), R('blue', 5.25, 6, 1), R('blue', 11.25, 5, 1), R('blue', 11.25, 6, 1),
+    ...[[5, 5], [6, 6], [11, 5], [12, 6]].map(([c, r]) => ({ ...R('blue', c, r, 1), move: true })),
   ];
 
   // Stage 7 — reference-frames/user-stage-07.jpg ("Stage 7"). Üstte çizgili
@@ -150,13 +150,13 @@
 
   // Stage 8 — reference-frames/user-stage-08.jpg ("Stage 8"). Sağ üstte sarı
   // çerçeveli kıvrım, soldan sağa yükselen sarı/mavi merdiven, altta mavi ve
-  // sarı tam sıralar, en altta yeşil kareler. Yazının altındaki satır 3–4
-  // bölgesinde (c 4–9) görünmeyen blok olabilir.
+  // sarı tam sıralar, en altta yeşil kareler. Yazısız başlangıç karesiyle
+  // doğrulandı (reference-frames/video-stage-08-start.png).
   const stage8 = [
     R('yellow', 11, 0, 1), R('yellow', 12, 0), R('yellow', 14, 0),
     V('yellow', 11, 1), R('blue', 12, 1, 1), R('blue', 13, 1), V('blue', 15, 1), V('yellow', 16, 1),
     R('red-s', 12, 2, 1), R('metal', 13, 2), R('yellow', 17, 2, 1),
-    R('yellow', 10, 3, 1), R('blue', 15, 3, 1), V('blue', 16, 3), R('yellow', 17, 3, 1),
+    R('yellow', 10, 3, 1), R('red-s', 11, 3, 1), R('blue', 15, 3, 1), V('blue', 16, 3), R('yellow', 17, 3, 1),
     R('yellow', 6, 4, 1), R('yellow', 7, 4, 1), R('yellow', 8, 4), R('red-s', 10, 4, 1), R('green-s', 15, 4, 1), V('yellow', 17, 4),
     R('yellow', 2, 5, 1), R('yellow', 3, 5, 1), R('yellow', 4, 5), R('yellow', 6, 5, 1), R('blue', 7, 5), R('red-s', 9, 5, 1), R('green-s', 13, 5), V('blue', 16, 5),
     R('yellow', 1, 6), R('blue', 3, 6), R('blue', 5, 6), R('green-s', 7, 6, 1), R('green-s', 12, 6, 1), V('yellow', 17, 6),

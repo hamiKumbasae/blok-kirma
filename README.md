@@ -70,7 +70,8 @@ Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu 
 - Sıradaki iş: Stage 11 ve sonrası için kareler; Stage 8 yazı altı bölgesi ve Stage 10 karesinin dosyası.
 - Menü (New Game / Continue / Exit), HUD (X can, SCORE 8 hane), Stage yazısı ve nebula arka plan referanslara göre çizildi. Continue, bölüm başında tarayıcıya kayıt tutuyor (orijinal davranış doğrulanmadı).
 - Kurallar `src/game.js` → `RULES`: başlangıç 5 can, tuğla +1000, çubuğa çarpma +100, baloncuk bonusu +10000 (gözlem, `birinci.mov`); çizgili blok 2 vuruş, metal kırılmaz, baloncuk olasılığı %12, top/çubuk hızları (varsayım).
-- Kırılma animasyonu (kırmızı vuruş, iki altın halka, gri kırıntılar) videodan alındı. Tuğlaların üzerinde dolaşan kahverengi yaratıklar henüz yok.
+- Videodan uygulananlar: bölüm girişi animasyonu (koyu gri → gümüş → renk), kırılma animasyonu, çizgili tuğla 2 vuruş, Stage 6 hareketli mavi kareler, yaratıklar (+50000), baloncuk ödülleri (+10000; lazer çubuk / ekstra can / yalnız puan).
+- Videodan henüz uygulanmayanlar: turuncu ateş topları ve füze mermileri (tetikleyici belirsiz), top/çubuk hızları (4x ekran kaydından ölçülemedi).
 - Çoklu top ve lazer yalnızca `?debug` modunda (1, 2 tuşları); hangi nesnenin bunları verdiği bilinmiyor.
 - Testler: `node tests/levels.test.js`. Tarayıcıda menü, 4 harita ve kısa oynanış hatasız çalıştı.
 - **YouTube bu ortamdan açılamıyor (bot doğrulaması).** Yeni haritalar için kullanıcıdan "Stage N" kareleri alınmalı. Ayrıntı ve çözülmemiş farklar için ORIGINAL-ANALYSIS.md.

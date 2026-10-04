@@ -15,7 +15,7 @@ const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b
 const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'blue-s', 'yellow-s', 'purple-s', 'violet-s', 'green-s', 'silver-s', 'metal']);
 
 // Referans karelerinde sayılan blok adetleri.
-const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'stage-7': 29, 'stage-8': 68, 'stage-9': 44, 'stage-10': 48, 'green-symmetric': 57 };
+const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'stage-7': 29, 'stage-8': 69, 'stage-9': 44, 'stage-10': 48, 'green-symmetric': 57 };
 
 for (const lv of levels) {
   const seen = new Map();

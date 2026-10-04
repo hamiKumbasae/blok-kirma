@@ -17,7 +17,8 @@
     paddleScore: 100,     // gözlem (yüksek): birinci.mov, top çubuğa her çarpışta +100
     bonusScore: 10000,    // gözlem (yüksek): birinci.mov, baloncuk yakalanınca +10000
     bonusChance: 0.2,     // varsayım: Stage 2'de ~46 tuğladan ~10 baloncuk (videom_parca_01)
-    laserShare: 0.35,     // varsayım: sarı çekirdekli (lazer) baloncuk oranı
+    laserShare: 0.3,      // varsayım: sarı çekirdekli (lazer) baloncuk oranı
+    lifeShare: 0.1,       // varsayım: ekstra can baloncuğu oranı (Stage 7'de X2→X3, +11000 gözlendi)
     laserInterval: 0.3,   // varsayım (s): lazer çubuk kendiliğinden çift ışın atar
     creatureScore: 50000, // gözlem (yüksek): yaratık yok edildiği karede +50000
     creatureFirst: 2.5,   // gözlem (orta): Stage 1'de ilk yaratık ~2.5 sn sonra
@@ -25,7 +26,8 @@
     creatureMax: 4,       // gözlem (orta): Stage 3'te aynı anda 4 yaratık
     creatureSpeed: 110,   // varsayım (px/s)
     bonusFall: 240,       // varsayım (px/s)
-    stripedHits: 2,       // varsayım: çizgili blokların işlevi bilinmiyor
+    stripedHits: 2,       // gözlem (yüksek): ilk vuruşta çizgiler gider, ikincide kırılır
+    moverSpeed: 70,       // varsayım (px/s): Stage 6 hareketli mavi kareler
     metalBreakable: false, // varsayım: metal bloklar bölüm bitişine sayılmıyor
     ballSpeed: 560,       // varsayım (px/s, 1264 px genişlikte)
     ballSpeedMax: 900,    // varsayım
@@ -113,6 +115,9 @@
         t: b.t, cells, set, rects: cells.map(([c, r]) => cellRect(c, r)), alive: true, flash: 0,
         hits: metal ? (RULES.metalBreakable ? 3 : Infinity) : b.t.endsWith('-s') ? RULES.stripedHits : 1,
         required: !metal || RULES.metalBreakable,
+        mover: !!b.move,
+        vx: b.move ? (b.c % 2 ? -1 : 1) * RULES.moverSpeed : 0,
+        vy: b.move ? (b.r % 2 ? -0.5 : 0.5) * RULES.moverSpeed : 0,
       };
     });
   }
@@ -177,7 +182,11 @@
     for (let i = 0; i < 6; i++) {
       S.debris.push({ x: x0 + Math.random() * (x1 - x0), y: cy, vx: (Math.random() - 0.5) * 160, vy: 60 + Math.random() * 200, t: 0 });
     }
-    if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy, kind: Math.random() < RULES.laserShare ? 'laser' : 'score' });
+    if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy, kind: pickBonusKind() });
+  }
+  function pickBonusKind() {
+    const r = Math.random();
+    return r < RULES.laserShare ? 'laser' : r < RULES.laserShare + RULES.lifeShare ? 'life' : 'score';
   }
   function hitBrick(br) {
     if (!Number.isFinite(br.hits)) { br.flash = 0.15; return; }
@@ -220,6 +229,27 @@
       }
     }
     S.creatures = S.creatures.filter((c) => !c.dead);
+  }
+
+  // Hareketli tuğlalar (Stage 6, videom_parca_02): diğer tuğlalara, duvarlara
+  // çarpıp yön değiştirerek dolaşır; halka kırılınca alana yayılır.
+  function overlapsAny(br, rect) {
+    if (rect.x < WALL_L || rect.x + rect.w > WALL_R || rect.y < FIELD_TOP + 8 || rect.y + rect.h > 720) return true;
+    for (const o of S.bricks) {
+      if (o === br || !o.alive) continue;
+      for (const r of o.rects) if (rect.x < r.x + r.w && rect.x + rect.w > r.x && rect.y < r.y + r.h && rect.y + rect.h > r.y) return true;
+    }
+    return false;
+  }
+  function moveBricks(dt) {
+    for (const br of S.bricks) {
+      if (!br.alive || !br.mover) continue;
+      const r = br.rects[0];
+      const nx = { ...r, x: r.x + br.vx * dt };
+      if (overlapsAny(br, nx)) br.vx = -br.vx; else r.x = nx.x;
+      const ny = { ...r, y: r.y + br.vy * dt };
+      if (overlapsAny(br, ny)) br.vy = -br.vy; else r.y = ny.y;
+    }
   }
 
   function collideBall(b, px, py) {
@@ -273,6 +303,7 @@
       if (S.fireT <= 0) { for (const dx of [26, PADDLE.w - 26]) S.shots.push({ x: S.paddleX + dx, y: PADDLE.y - 4 }); S.fireT = RULES.laserInterval; }
     }
     updateCreatures(dt);
+    moveBricks(dt);
     for (const b of S.balls) if (!b.docked) stepBall(b, dt);
     S.balls = S.balls.filter((b) => b.y - BALL_R < H);
 
@@ -294,6 +325,7 @@
       if (bn.y + 22 >= PADDLE.y && bn.y - 22 <= PADDLE.y + PADDLE.h && bn.x >= S.paddleX - 10 && bn.x <= S.paddleX + PADDLE.w + 10) {
         bn.caught = true; S.score += RULES.bonusScore;
         if (bn.kind === 'laser') S.laser = Infinity; // gözlem: lazer bölüm sonuna kadar sürüyor
+        if (bn.kind === 'life') S.lives++;
       }
     }
     S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
@@ -325,7 +357,7 @@
   function drawBrick(br) {
     const stage = revealStage(br);
     const base = stage === 'dark' ? '#3a3a48' : stage === 'silver' ? '#d8dcea' : COLORS[br.t];
-    const striped = stage === 'silver' || (!stage && (br.t.endsWith('-s') || br.t === 'metal'));
+    const striped = stage === 'silver' || (!stage && ((br.t.endsWith('-s') && br.hits > 1) || br.t === 'metal'));
     const B = 6; // kabartma kalınlığı
     for (let i = 0; i < br.cells.length; i++) {
       const [c, r] = br.cells[i], rc = br.rects[i];
@@ -397,7 +429,8 @@
       g.addColorStop(0, 'rgba(220,235,255,.95)'); g.addColorStop(0.7, 'rgba(90,130,220,.55)'); g.addColorStop(1, 'rgba(60,90,200,.25)');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bn.x, bn.y, 22, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(210,225,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = bn.kind === 'laser' ? '#f0c840' : '#2a3a90'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
+      // Can baloncuğunun görünüşü doğrulanmadı; yeşil çekirdek seçildi.
+      ctx.fillStyle = bn.kind === 'laser' ? '#f0c840' : bn.kind === 'life' ? '#5fd848' : '#2a3a90'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
     }
     for (const c of S.creatures) drawCreature(c);
   }
