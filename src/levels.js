@@ -1,7 +1,9 @@
 // ExBlock haritaları — referans karelerinden ölçülerek çıkarıldı.
 //
 // Izgara: 18 sütun (c = 0..17) × satır (r = 0..). Bir hücre, 1264 px genişliğe
-// ölçeklenmiş video karesinde 65 × 63.5 px (yarım tuğla). Normal tuğla 2×1,
+// ölçeklenmiş video karesinde 65 × 63.5 px (yarım tuğla). Satır 0, HUD'ın hemen
+// altındaki ilk sıra (Stage 4 burada başlıyor); Stage 1–3 satır 1'den başlar.
+// Bazı bloklar ızgaraya tam oturmuyor; c kesirli olabilir (Stage 4). Normal tuğla 2×1,
 // dikey tuğla 1×2 hücre; L parçaları üç hücreden oluşur.
 //
 // Türler:
@@ -20,6 +22,9 @@
   const V = (t, c, r) => R(t, c, r, 1, 2);
   const L = (t, cells) => ({ t, cells });
   const row = (t, cols, r, w = 2, h = 1) => cols.map((c) => R(t, c, r, w, h));
+  // İlk ölçümler satır 0 = Stage 1'in üst sırası kabul edilerek yazıldı; Stage 4
+  // bir sıra daha yukarıda başladığı için bu haritalar bir satır aşağı kaydırılır.
+  const down = (bricks) => bricks.map((b) => (b.cells ? { ...b, cells: b.cells.map(([c, r]) => [c, r + 1]) } : { ...b, r: b.r + 1 }));
 
   // Stage 1 — reference-frames/user-stage-01b.jpg ("Stage 1", puan 0, X 5).
   // user-stage-01.jpg'de alt sıra aynı renklerde ama çizgili: büyük olasılıkla
@@ -85,11 +90,22 @@
     ...ringRow(5), ...outerRow(6),
   ];
 
-  root.EXBLOCK_LEVELS = [
-    { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: stage1 },
-    { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: stage2 },
-    { id: 'spiral', stage: 3, name: 'Spiral', source: 'reference-frames/user-stage-03-start.jpg', confidence: 'yüksek', bricks: spiral },
-    { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: greenSym },
+  // Stage 4 — reference-frames/user-stage-04.jpg ("Stage 4"). İki üst blok:
+  // satır 0–4 metal/mor/metal/mor/metal. Bloklar ızgaraya göre çeyrek hücre
+  // kayık (c = 2.25 / 4.5 ve ayna 11.5 / 13.75); karede satır başına birkaç
+  // piksellik dışa kayma da var, ölçüm hatası sayıldı. Alt sıra satır 6.
+  const pillar = (cols) => cols.flatMap((c) => ['metal', 'purple', 'metal', 'purple', 'metal'].map((t, r) => R(t, c, r)));
+  const stage4 = [
+    ...pillar([2.25, 4.5, 11.5, 13.75]),
+    ...['red', 'blue', 'metal', 'green', 'metal', 'purple', 'metal', 'yellow', 'green'].map((t, i) => R(t, i * 2, 6)),
   ];
-  root.EXBLOCK_GRID = { cols: 18, x0: 49, y0: 137, cw: 65, ch: 63.5 };
+
+  root.EXBLOCK_LEVELS = [
+    { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: down(stage1) },
+    { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: down(stage2) },
+    { id: 'spiral', stage: 3, name: 'Spiral', source: 'reference-frames/user-stage-03-start.jpg', confidence: 'yüksek', bricks: down(spiral) },
+    { id: 'stage-4', stage: 4, name: 'İki kule', source: 'reference-frames/user-stage-04.jpg', confidence: 'yüksek (yatay konum ±0.25 hücre)', bricks: stage4 },
+    { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: down(greenSym) },
+  ];
+  root.EXBLOCK_GRID = { cols: 18, x0: 49, y0: 73.5, cw: 65, ch: 63.5 };
 })(typeof window !== 'undefined' ? window : globalThis);

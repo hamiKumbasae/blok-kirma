@@ -63,3 +63,16 @@ Bu oturumdan YouTube'a erişilemedi (önce ağ politikası, sonra Google bot do�
 - Spiral iki ayrı karede (`0055.jpg`, `user-stage-03-start.jpg`) birebir aynı; bu harita güvenilir.
 
 Güncelleme — kullanıcının ikinci Stage 1 karesi (`user-stage-01b.jpg`, puan 0, X 5): alt sıra **çizgisiz** `G P B P B P B P G`. Renkler `user-stage-01.jpg` ile aynı, yalnızca çizgiler yok. Bu yüzden "Stage N" yazısı sırasında görülen çizgi/gümüş görünüm büyük olasılıkla **bölüm girişindeki parıltı animasyonu**; tuğla türü değil (orta güven). Stage 2'nin gümüş orta bandı da aynı şekilde yorumlandı ve renkler `0035.jpg`'den alındı (orta bant kırmızı, alt bant sarı). Spiraldeki yeşil çizgili ve `0550.jpg`'deki kırmızı/mor çizgili bloklar oyun sırasında da görüldüğü için gerçek özel bloklar kabul edildi. `0010.jpg`'deki ortadaki kırmızı tuğla hâlâ açıklanamadı.
+
+### Stage kareleri (kullanıcı, baştan sırayla)
+
+| Stage | Dosya | Bölüm başında can / puan | Not |
+| --- | --- | --- | --- |
+| 1 | `user-stage-01b.jpg` | X 5 / 00000000 | Alt sıra çizgisiz G P B P B P B P G |
+| 2 | `user-stage-02b.jpg` | X 5 / 00054000 | Orta bant kırmızı, alt bant sarı (çizgisiz) — giriş parıltısı yorumunu doğruluyor |
+| 3 | `user-stage-03b.jpg` | X 5 / 00244800 | Spiral, "Stage 3" yazısıyla doğrulandı |
+| 4 | `user-stage-04.jpg` | X 4 / 00513700 | Yeni harita: iki kule + alt sıra |
+
+- Stage 4'ün üst sırası Stage 1–3'ün üst sırasından **bir sıra yukarıda**. Izgaranın satır 0'ı HUD'ın hemen altına alındı (`y0 = 73.5`); Stage 1–3 satır 1'den başlıyor.
+- Stage 4 kuleleri ızgaraya göre çeyrek hücre kayık (c = 2.25 / 4.5, ayna 11.5 / 13.75). Karede satır başına birkaç piksellik dışa kayma var; ölçüm/görüntü hatası sayıldı.
+- Puan farkları (Stage 1→2: 54000, 2→3: 190800, 3→4: 268900) tuğla sayısıyla açıklanamıyor; bonuslar/nesneler ayrıca incelenmeli.
