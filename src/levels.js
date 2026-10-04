@@ -305,17 +305,19 @@
   ];
 
   // Stage 20 — kırmızı kanat/merdiven, ortada sarı U içinde çizgili yeşil, yanlarda
-  // kırmızı köşeli parçalar (yarım hücre kayık), altta mavi ve metal.
+  // kırmızı köşeli parçalar, altta mavi ve metal. Konumlar kullanıcının net
+  // "Stage 20" karesinden (images/19); oyun sırasında yan parçalar kayık
+  // görünüyor, hareket ediyor olabilirler (doğrulanmadı).
   const stage20 = [
     R('red-s', 0, 1), R('red-s', 2, 1, 1), R('red-s', 15, 1, 1), R('red-s', 16, 1),
     R('red', 1, 2), R('red-s', 3, 2), R('red-s', 5, 2, 1), R('red-s', 12, 2, 1), R('red-s', 13, 2), R('red', 15, 2),
     R('red', 4, 3), R('red-s', 6, 3), R('metal', 8, 3), R('red-s', 10, 3), R('red', 12, 3),
-    R('red', 1.3, 4), R('yellow', 7, 4), R('yellow', 9, 4), R('red', 14.5, 4),
-    R('red', 0.8, 5), R('yellow', 7, 5, 1), R('green-s', 8, 5, 1), R('green-s', 9, 5, 1), R('yellow', 10, 5, 1), R('red', 15.4, 5),
-    R('red', 1.8, 6, 1), R('red', 4, 6), R('red-s', 6, 6), R('metal', 8, 6), R('red-s', 10, 6), R('red', 12, 6), R('red', 15.4, 6, 1),
+    R('red', 1, 4), R('yellow', 7, 4), R('yellow', 9, 4), R('red', 15, 4),
+    R('red', 1, 5), R('yellow', 7, 5, 1), R('green-s', 8, 5, 1), R('green-s', 9, 5, 1), R('yellow', 10, 5, 1), R('red', 15, 5),
+    R('red', 2, 6, 1), R('red', 4, 6), R('red-s', 6, 6), R('metal', 8, 6), R('red-s', 10, 6), R('red', 12, 6), R('red', 15, 6, 1),
     R('red', 1, 7), R('red-s', 3, 7), R('red-s', 5, 7, 1), R('metal', 6, 7), R('metal', 10, 7), R('red-s', 12, 7, 1), R('red-s', 13, 7), R('red', 15, 7),
     R('blue', 0, 8), R('blue', 2, 8, 1), R('blue', 3, 8), R('blue', 13, 8), R('blue', 15, 8, 1), R('blue', 16, 8),
-    R('metal', 2, 9), R('metal', 14, 9),
+    R('metal', 0, 9), R('metal', 16, 9),
   ];
 
   // Stage 21 — çizgili lila elmas; ortadan geçen mavi sıra elmastan geniş ve
@@ -346,7 +348,7 @@
     { id: 'stage-17', stage: 17, name: 'Kalp', source: 'reference-frames/kayit-stage-17-start.jpg', confidence: 'orta-yüksek (iç dikey düzen)', bricks: stage17 },
     { id: 'stage-18', stage: 18, name: 'Robot yüz', source: 'reference-frames/kayit-stage-18-start.jpg', confidence: 'orta (metal parçalar)', bricks: stage18 },
     { id: 'stage-19', stage: 19, name: 'Tek sıralar', source: 'reference-frames/kayit-stage-19-start.jpg', confidence: 'yüksek', bricks: stage19 },
-    { id: 'stage-20', stage: 20, name: 'Kanatlar', source: 'reference-frames/kayit-stage-20-start.jpg', confidence: 'orta (yan köşeli parçalar)', bricks: stage20 },
+    { id: 'stage-20', stage: 20, name: 'Kanatlar', source: 'reference-frames/user-stage-20.jpg', confidence: 'yüksek', bricks: stage20 },
     { id: 'stage-21', stage: 21, name: 'Elmas ve kuşak', source: 'reference-frames/kayit-stage-21-start.jpg', confidence: 'yüksek', bricks: stage21 },
   ];
   // Sırası bilinmeyen haritalar: oyunda kullanılmaz, Stage karesi gelince
