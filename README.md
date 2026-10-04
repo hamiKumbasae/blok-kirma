@@ -76,6 +76,8 @@ Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu 
 - Testler: `node tests/levels.test.js`. Tarayıcıda menü, 4 harita ve kısa oynanış hatasız çalıştı.
 - **YouTube bu ortamdan açılamıyor (bot doğrulaması).** Yeni haritalar için kullanıcıdan "Stage N" kareleri alınmalı. Ayrıntı ve çözülmemiş farklar için ORIGINAL-ANALYSIS.md.
 
+- Menüde **Stage Select** var (orijinalde yok): tüm bölümler küçük resimleriyle listelenir, tıklanan bölüm 5 canla başlar. `index.html#stage7` bağlantısı doğrudan o bölümü, `#stages` seçim ekranını açar.
+
 ## Devam edecek Codex için işler
 
 Önce araştırmayı tamamla, sonra oyun davranışını değiştir:
