@@ -201,6 +201,10 @@
     { id: 'stage-8', stage: 8, name: 'Sarı kıvrım', source: 'reference-frames/user-stage-08.jpg', confidence: 'orta-yüksek (yazı altı bölge)', bricks: stage8 },
     { id: 'stage-9', stage: 9, name: 'Kareler', source: 'reference-frames/user-stage-09.jpg', confidence: 'yüksek (mor kareler ±0.1 hücre)', bricks: stage9 },
     { id: 'stage-10', stage: 10, name: 'Kırmızı sütunlar', source: 'sohbet görüntüsü (kaydedilemedi)', confidence: 'orta (görsel ölçüm)', bricks: stage10 },
+  ];
+  // Sırası bilinmeyen haritalar: oyunda kullanılmaz, Stage karesi gelince
+  // doğru yere taşınır.
+  root.EXBLOCK_UNPLACED = [
     { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: down(greenSym) },
   ];
   root.EXBLOCK_GRID = { cols: 18, x0: 49, y0: 73.5, cw: 65, ch: 63.5 };

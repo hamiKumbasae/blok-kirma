@@ -374,7 +374,7 @@
     if (S.mode === 'intro') drawStageBanner();
     if (S.paused) panel('Pause', ['Devam etmek için P']);
     if (S.mode === 'gameover') panel('Game Over', ['Enter / Boşluk: menü']);
-    if (S.mode === 'end') panel('Doğrulanmış haritalar bitti', ['Sonraki bölümler henüz videodan çıkarılmadı.', 'Enter / Boşluk: menü']);
+    if (S.mode === 'end') panel('Stage 10 tamamlandı', ['Sonraki bölümler henüz eklenmedi.', 'Enter / Boşluk: menü']);
     if (debug) {
       const lv = LEVELS[S.levelIndex];
       ctx.font = '20px monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#9cf';
