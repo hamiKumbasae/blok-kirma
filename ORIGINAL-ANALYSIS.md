@@ -83,3 +83,10 @@ Güncelleme — kullanıcının ikinci Stage 1 karesi (`user-stage-01b.jpg`, pua
 - Çizgili bloklar Stage 5/6'da oyun sırasında da (`0120.jpg`) çizgili görünüyor; bunlar gerçek blok türü. Stage 1/2'deki çizgi ise giriş parıltısıydı.
 - İki farklı çizgili mor var: mavimsi lila (`purple-s`) ve koyu eflatun (`violet-s`, Stage 6 sol halka).
 - `0120.jpg` Stage 5'e benziyor ama sol yay farklı (mavi ve turuncu kareler). Tuğlaların vurulunca renk değiştirip değiştirmediği henüz bilinmiyor.
+| 7 | `user-stage-07.jpg` | X 2 / 01016300 | Çizgili eflatun/sarı basamaklar, yeşil dikey çiftler, kırmızı/mavi, metal L'ler ve kareler |
+| 8 | `user-stage-08.jpg` | X 3 / 01118700 | Sağ üstte sarı/mavi kıvrım, yükselen merdiven, mavi ve sarı tam sıralar, yeşil kareler (68 blok) |
+| 9 | `user-stage-09.jpg` | X 2 / 01296500 | Çizgili yeşil kareler; ortada ızgaraya oturmayan, simetrik iki sıra mor kare |
+| 10 | (sohbette, dosyaya kaydedilemedi) | X 3 / 01442300 | Çizgili kırmızı dikey bloklarla "HUK" biçimi, metal ara parçalar |
+
+- Stage 6→7'de can X 4 → X 2, 7→8'de X 2 → X 3, 9→10'da X 2 → X 3: oyun içinde ekstra can kazanılıyor.
+- Ölçüm aracı: sol/sağ iç duvar kenarından ızgara aralığı (alan genişliği = 19 hücre) ve x0 (= iç kenar + 0.49 hücre), HUD'ın alt kenarından satır 0 bulunur; her satır ortasından parlak bölümler okunur. Stage 4 ve 6 ile doğrulandı.
