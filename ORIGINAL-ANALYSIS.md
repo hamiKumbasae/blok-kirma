@@ -168,3 +168,19 @@ Uzun videoda "▶▶4x" etiketsiz bölümler 1x, etiketli bölümler 4x. 0.25x k
 | Stage 13: turuncu 2×2, mor sütunlu piramit (çizgili kırmızı tepe, çizgili yeşil/lila iç), metal basamaklar, yeşil kaktüs, sarı ve çizgili lila tam sıralar (72 blok) | `trim-stage-13-start.jpg` | yüksek |
 | Stage 14: iki yanda çizgili basamak, ortada küçük piramit, iki kayan mor parça, altta iki karışık tam sıra | `trim-stage-14-start.jpg` | yüksek (yalnız başlangıç) |
 | Stage 14'te can X1 → X0 düştü, kayıt Continue ile 01979000 puanla yeni bir haritaya geçiyor (kullanıcı kaydı) | trim_23 0:36 | gözlem |
+
+## `kayit_trim_01`–`kayit_trim_24` (0.25x kayıt; Stage 14 → Stage 22 girişi)
+
+`kayit_trim_20` iki kez gönderildi; iki dosya birebir aynı.
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| **Continue = bölüm seçimi**: oyun bitince Continue, "Select Stage Using V+/V- · Press OK to Start Game" ekranını açıyor; ulaşılan bölümler arasında seçiliyor, seçilen bölüm 00000000 puan ve X5 ile başlıyor | `kayit-continue-select.jpg`, kayit_trim_13–14 | yüksek |
+| Stage 15: kırmızı çizgili yan duvarlar arasında yeşil çerçeve, mavi iç halka, ortada sarı; metal parçalar | `kayit-stage-15-start.jpg` | yüksek |
+| Stage 16: yeşil kenarlı kırmızı piramit, metal pencereler, altta mavi ve çizgili mor/mavi sıra | `kayit-stage-16-start.jpg` | yüksek |
+| Stage 17: çizgili kenarlı kırmızı kalp ve mavi kareli kalp çizgisi | `kayit-stage-17-start.jpg` | orta-yüksek |
+| Stage 18: metal kemerli "robot yüz", çizgili lila sütunlar, çizgili kırmızı taban | `kayit-stage-18-start.jpg` | orta |
+| Stage 19: yeşil ve çizgili lila tek sıralar, dikey metal eksen, kırmızı + lila alt sıralar | `kayit-stage-19-start.jpg` | yüksek |
+| Stage 20: kırmızı kanatlar, sarı U içinde çizgili yeşil, yanlarda kayık kırmızı köşeli parçalar, mavi + metal alt | `kayit-stage-20-start.jpg` | orta |
+| Stage 21: çizgili lila elmas, ortasından geçen geniş mavi kuşak | `kayit-stage-21-start.jpg` | yüksek |
+| Stage 22: yalnızca giriş görüldü (yazı haritayı kapatıyor) → eklenmedi | `kayit-stage-22-intro.jpg` | — |
