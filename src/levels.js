@@ -193,6 +193,58 @@
     R('red-s', 13, 6, 1), V('red-s', 14, 6), V('red-s', 15, 7), R('red-s', 15, 9, 1), V('red-s', 16, 8),
   ];
 
+  // Stage 11 — trim_17/18 (0.25x kayıt). Mavi kareler 4 sütun aralıklı çapraz
+  // çizgiler halinde başlıyor ve oyun boyunca yatayda kayıyor (hepsi hareketli).
+  const stage11 = [];
+  for (let r = 0; r < 10; r++) {
+    const off = (((0.4 - 0.95 * r) % 4) + 4) % 4;
+    for (let c = off; c <= 17; c += 4) stage11.push({ ...R('blue', +c.toFixed(2), r, 1), move: 'h' });
+  }
+
+  // Stage 12 — trim_19 temiz başlangıç karesi. Metal iskelet, iki sarı ve bir
+  // çizgili lila üst sıra, ortada çizgili kırmızı; dört sarı kare serbestçe
+  // dolaşıyor.
+  const stage12 = [
+    R('yellow', 5, 1), R('purple-s', 8, 1), R('yellow', 11, 1),
+    ...[1, 4, 7, 10, 13, 16].map((c) => V('metal', c, 2)),
+    R('red-s', 8, 4),
+    ...[2, 5, 8, 11, 14].map((c) => R('metal', c, 5)),
+    ...[4, 7, 10, 13].map((c) => R('metal', c, 7, 1)),
+    ...[[6, 4], [11, 4], [6, 6], [11, 6]].map(([c, r]) => ({ ...R('yellow', c, r, 1), move: true })),
+  ];
+
+  // Stage 13 — trim_20 temiz başlangıç karesi. Sol üstte turuncu 2×2, ortada
+  // mor sütunlu piramit (çizgili kırmızı tepe, çizgili yeşil/lila iç), iki
+  // yanda metal basamaklar, sağda yeşil kaktüs, altta sarı ve çizgili lila sıra.
+  const stage13 = [
+    ...[[1, 1], [2, 1], [1, 2], [2, 2]].map(([c, r]) => R('red', c, r, 1)),
+    ...[[9, 0], [8, 1], [10, 1], [7, 2], [11, 2]].map(([c, r]) => R('red-s', c, r, 1)),
+    V('purple', 9, 1), V('purple', 8, 2), V('purple', 10, 2),
+    V('purple', 7, 3), V('purple', 11, 3), V('purple', 6, 4), V('purple', 12, 4),
+    V('purple', 5, 5), V('purple', 13, 5), V('purple', 7, 5), V('purple', 11, 5),
+    V('purple', 6, 6), V('purple', 12, 6),
+    ...[5, 7, 11, 13].map((c) => R('purple', c, 7, 1)),
+    V('green-s', 9, 3), V('green-s', 8, 4), V('green-s', 10, 4), V('green-s', 8, 6), V('green-s', 10, 6),
+    V('purple-s', 9, 5), R('purple-s', 9, 7, 1),
+    R('metal', 5, 3), R('metal', 12, 3), R('metal', 4, 4), R('metal', 13, 4), R('metal', 3, 5), R('metal', 14, 5),
+    V('metal', 0, 6), V('metal', 4, 6), V('metal', 14, 6),
+    ...[[16, 1], [15, 2], [16, 2], [17, 2], [15, 3], [16, 3], [17, 3], [16, 4], [16, 5], [16, 6], [16, 7]].map(([c, r]) => R('green', c, r, 1)),
+    ...[0, 2, 4, 6, 8, 10, 12, 14, 16].map((c) => R('yellow', c, 8)),
+    R('purple-s', 0, 9, 1), ...[1, 3, 5, 7, 9, 11, 13, 15].map((c) => R('purple-s', c, 9)), R('purple-s', 17, 9, 1),
+  ];
+
+  // Stage 14 — trim_23 temiz başlangıç karesi. Üstte iki yanda çizgili
+  // basamaklar ve ortada küçük piramit, iki mor parça yatay kayıyor; altta
+  // karışık iki tam sıra (alt sırada metal aralar).
+  const stage14 = [
+    R('yellow-s', 0, 0), R('purple-s', 8, 0), R('yellow-s', 16, 0),
+    R('green-s', 1, 1), R('red', 7, 1), R('red', 9, 1), R('green-s', 15, 1),
+    R('violet-s', 2, 2), R('purple-s', 6, 2), R('purple-s', 8, 2), R('purple-s', 10, 2), R('violet-s', 14, 2),
+    { ...R('purple', 5.6, 3, 1), move: 'h' }, { ...R('purple', 7.4, 4), move: 'h' },
+    ...['red-s', 'red', 'yellow-s', 'yellow', 'violet-s', 'purple', 'purple-s', 'blue', 'green-s'].map((t, i) => R(t, i * 2, 5)),
+    ...['metal', 'red', 'metal', 'blue', 'metal', 'yellow', 'metal', 'purple', 'metal'].map((t, i) => R(t, i * 2, 6)),
+  ];
+
   root.EXBLOCK_LEVELS = [
     { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: down(stage1) },
     { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: down(stage2) },
@@ -204,6 +256,10 @@
     { id: 'stage-8', stage: 8, name: 'Sarı kıvrım', source: 'reference-frames/user-stage-08.jpg', confidence: 'orta-yüksek (yazı altı bölge)', bricks: stage8 },
     { id: 'stage-9', stage: 9, name: 'Kareler', source: 'reference-frames/user-stage-09.jpg', confidence: 'yüksek (mor kareler ±0.1 hücre)', bricks: stage9 },
     { id: 'stage-10', stage: 10, name: 'Kırmızı sütunlar', source: 'reference-frames/video-stage-10-start.jpg', confidence: 'yüksek', bricks: stage10 },
+    { id: 'stage-11', stage: 11, name: 'Kayan çaprazlar', source: 'trim_17 1:10, trim_18', confidence: 'orta (hareket yaklaşık)', bricks: stage11 },
+    { id: 'stage-12', stage: 12, name: 'Metal iskelet', source: 'reference-frames/trim-stage-12-start.jpg', confidence: 'yüksek', bricks: stage12 },
+    { id: 'stage-13', stage: 13, name: 'Piramit ve kaktüs', source: 'reference-frames/trim-stage-13-start.jpg', confidence: 'yüksek', bricks: stage13 },
+    { id: 'stage-14', stage: 14, name: 'Basamaklı sıra', source: 'reference-frames/trim-stage-14-start.jpg', confidence: 'yüksek (yalnız başlangıç görüldü)', bricks: stage14 },
   ];
   // Sırası bilinmeyen haritalar: oyunda kullanılmaz, Stage karesi gelince
   // doğru yere taşınır.
