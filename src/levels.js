@@ -9,7 +9,7 @@
 // Türler:
 //   red, blue, yellow, green, purple      → düz renkli tuğla
 //   red-s, blue-s, yellow-s, purple-s,
-//   green-s, silver-s                     → çizgili/parlak görünümlü tuğla
+//   violet-s, green-s, silver-s           → çizgili/parlak görünümlü tuğla
 //   metal                                 → perçinli gri-bej blok
 // Çizgili ve metal blokların dayanıklılığı videodan DOĞRULANMADI; davranış
 // game.js içindeki RULES nesnesinde varsayım olarak tanımlı.
@@ -100,11 +100,44 @@
     ...['red', 'blue', 'metal', 'green', 'metal', 'purple', 'metal', 'yellow', 'green'].map((t, i) => R(t, i * 2, 6)),
   ];
 
+  // Stage 5 — reference-frames/user-stage-05.jpg ("Stage 5"). Elmas biçimli
+  // halka: sol yarı çizgili mor 2'lik tuğlalar, sağ yarı kırmızı/mor çizgili
+  // kareler, ortada tek metal kare. Satır 3 sağdaki kırmızı kare yazının
+  // altında kaldı; desenden çıkarıldı.
+  const stage5 = [
+    R('purple-s', 7, 0), R('purple-s', 9, 0, 1),
+    ...[[6, 1], [5, 2], [4, 3], [3, 4]].map(([c, r]) => R('purple-s', c, r)),
+    R('red-s', 3, 5, 1),
+    ...[[3, 6], [4, 7], [5, 8], [6, 9]].map(([c, r]) => R('purple-s', c, r)),
+    ...[[9, 1], [10, 2], [11, 3], [12, 4], [13, 5], [12, 6], [11, 7], [10, 8], [9, 9]].map(([c, r]) => R('red-s', c, r, 1)),
+    ...[[10, 1], [11, 2], [12, 3], [13, 4], [13, 6], [12, 7], [11, 8], [10, 9]].map(([c, r]) => R('purple-s', c, r, 1)),
+    R('metal', 8, 5, 1),
+  ];
+
+  // Stage 6 — reference-frames/user-stage-06.jpg ("Stage 6"). Köşelerde
+  // çizgili kırmızı kareler, iki yanda çizgili merdiven, ortada üç renk +
+  // mor, altta dört L parçadan iki halka. Halkaların içindeki mavi kareler
+  // boşluğun soluna çeyrek hücre kayık duruyor (c = 5.25 / 11.25).
+  const ring = (t, c, r) => [
+    L(t, [[c, r], [c + 1, r], [c, r + 1]]), L(t, [[c + 2, r], [c + 3, r], [c + 3, r + 1]]),
+    L(t, [[c, r + 2], [c, r + 3], [c + 1, r + 3]]), L(t, [[c + 3, r + 2], [c + 2, r + 3], [c + 3, r + 3]]),
+  ];
+  const stage6 = [
+    R('red-s', 0, 0, 1), R('blue', 6, 0), R('yellow', 8, 0), R('green', 10, 0), R('red-s', 17, 0, 1),
+    R('purple-s', 1, 1), R('purple', 8, 1), R('purple-s', 15, 1),
+    R('yellow-s', 2, 2), R('yellow-s', 14, 2),
+    R('green-s', 3, 3), R('green-s', 13, 3),
+    ...ring('violet-s', 4, 4), ...ring('red-s', 10, 4),
+    R('blue', 5.25, 5, 1), R('blue', 5.25, 6, 1), R('blue', 11.25, 5, 1), R('blue', 11.25, 6, 1),
+  ];
+
   root.EXBLOCK_LEVELS = [
     { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: down(stage1) },
     { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: down(stage2) },
     { id: 'spiral', stage: 3, name: 'Spiral', source: 'reference-frames/user-stage-03-start.jpg', confidence: 'yüksek', bricks: down(spiral) },
     { id: 'stage-4', stage: 4, name: 'İki kule', source: 'reference-frames/user-stage-04.jpg', confidence: 'yüksek (yatay konum ±0.25 hücre)', bricks: stage4 },
+    { id: 'stage-5', stage: 5, name: 'Elmas', source: 'reference-frames/user-stage-05.jpg', confidence: 'yüksek (1 kare desenden)', bricks: stage5 },
+    { id: 'stage-6', stage: 6, name: 'İki halka', source: 'reference-frames/user-stage-06.jpg', confidence: 'yüksek', bricks: stage6 },
     { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: down(greenSym) },
   ];
   root.EXBLOCK_GRID = { cols: 18, x0: 49, y0: 73.5, cw: 65, ch: 63.5 };

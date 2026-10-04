@@ -11,10 +11,10 @@ const levels = ctx.EXBLOCK_LEVELS;
 const grid = ctx.EXBLOCK_GRID;
 
 const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b.c + (i % b.w), b.r + Math.floor(i / b.w)]);
-const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'blue-s', 'yellow-s', 'purple-s', 'green-s', 'silver-s', 'metal']);
+const TYPES = new Set(['red', 'blue', 'yellow', 'green', 'purple', 'red-s', 'blue-s', 'yellow-s', 'purple-s', 'violet-s', 'green-s', 'silver-s', 'metal']);
 
 // Referans karelerinde sayılan blok adetleri.
-const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'green-symmetric': 57 };
+const expected = { 'stage-1': 32, 'stage-2': 46, spiral: 35, 'stage-4': 29, 'stage-5': 29, 'stage-6': 24, 'green-symmetric': 57 };
 
 for (const lv of levels) {
   const seen = new Map();
@@ -28,8 +28,8 @@ for (const lv of levels) {
     }
   }
   assert.strictEqual(lv.bricks.length, expected[lv.id], `${lv.id}: blok sayısı`);
-  // Spiral dışındaki gözlenen haritalar yatayda simetrik (şekil olarak).
-  if (lv.id === 'spiral') { console.log(`ok ${lv.id}: ${lv.bricks.length} blok, ${seen.size} hücre`); continue; }
+  // Spiral, Stage 5 ve 6 dışındaki gözlenen haritalar yatayda simetrik (şekil olarak).
+  if (['spiral', 'stage-5', 'stage-6'].includes(lv.id)) { console.log(`ok ${lv.id}: ${lv.bricks.length} blok, ${seen.size} hücre`); continue; }
   for (const key of seen.keys()) {
     const [c, r] = key.split(',').map(Number);
     assert(seen.has(grid.cols - 1 - c + ',' + r), `${lv.id}: simetri bozuk ${key}`);
