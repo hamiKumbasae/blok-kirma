@@ -1,5 +1,9 @@
 # Yıldız Blok — ExBlock yeniden yapım çalışması
 
+**▶ Oyna:** https://hamikumbasae.github.io/exblock/
+
+Bağlantı, depo ayarlarında GitHub Pages açıkken çalışır (Settings → Pages → Source: GitHub Actions; gizli depoda ücretli plan gerekir).
+
 Amaç: Çocuklukta televizyon/uydu alıcısında kumandayla oynanan **ExBlock** oyununu ayrı bir proje olarak, önce orijinaline mümkün olduğunca sadık biçimde yeniden yapmak. Kullanıcı mevcut `tugla-kirma` oyununa eklenmesini istemedi.
 
 **Durum: Çalışan bir prototip ve kısmi video analizi var. Birebir yeniden yapım henüz tamamlanmadı.** Kullanım limiti nedeniyle 4 Ekim 2026 tarihinde araştırma durdurulup bu devam kaydı hazırlandı. Sıradaki Codex bu dosyadan devam etmeli; tüm bölümlerin incelendiğini varsaymamalı.
@@ -46,8 +50,6 @@ Ayrıntılar [ORIGINAL-ANALYSIS.md](ORIGINAL-ANALYSIS.md) içinde. `reference-fr
 | 17:57 civarı | `1077.jpg` | Kısmi harita; farklı çubuk biçimi ve uzun dikey atış izleri |
 | 29:54 civarı | `1794.jpg` | Kısmi metal çerçeve ve çok renkli bloklar |
 | 58:17 civarı | `stage-15.jpg` | **Stage 15** yazısı; ilk haritaya benzeyen tekrar düzeni, can göstergesi X0 |
-
-![Seçilmiş referans kareleri](reference-frames/reference-overview.jpg)
 
 Son kare Stage 15'i açıkça gösteriyor. **“Oyun 15 bölüm” veya “kesin 14 harita döngüsü var” sonucu çıkarılmadı.** Puanın sonraki örneklerde düşmesi, tekrarlar, Continue/yeniden başlama ve bölüm sayacı birlikte incelenmeli. Tek tek görüntüler bölüm başlangıcı olmayabilir ve haritanın bir kısmı zaten kırılmış olabilir.
 
