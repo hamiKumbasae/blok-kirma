@@ -21,9 +21,10 @@
   const L = (t, cells) => ({ t, cells });
   const row = (t, cols, r, w = 2, h = 1) => cols.map((c) => R(t, c, r, w, h));
 
-  // Stage 1 — reference-frames/user-stage-01.jpg ("Stage 1" yazılı başlangıç).
-  // Not: uzun videonun 0010.jpg karesinde alt sıra çizgisiz ve ortası kırmızı
-  // (G P B P B R B P G). Bu fark çözülmedi; bkz. ORIGINAL-ANALYSIS.md.
+  // Stage 1 — reference-frames/user-stage-01b.jpg ("Stage 1", puan 0, X 5).
+  // user-stage-01.jpg'de alt sıra aynı renklerde ama çizgili: büyük olasılıkla
+  // bölüm girişindeki parıltı animasyonu. 0010.jpg'de alt sıranın ortası
+  // kırmızı (G P B P B R B P G); bu fark çözülmedi.
   const stage1 = [
     ...row('red', [6, 10], 0),
     ...row('blue', [3, 8, 13], 1),
@@ -31,21 +32,21 @@
     ...row('green', [0, 4, 8, 12, 16], 3),
     ...['green', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'green']
       .map((t, i) => R(t, i * 2, 5)),
-    ...['green', 'purple-s', 'blue-s', 'purple-s', 'blue-s', 'purple-s', 'blue-s', 'purple-s', 'green']
+    ...['green', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'green']
       .map((t, i) => R(t, i * 2, 7)),
   ];
 
   // Stage 2 — reference-frames/user-stage-02.jpg ("Stage 2" yazılı başlangıç).
-  // Üç bant, dikey tuğlalar, metal uçlar. Orta bant gümüş çizgili, alt bant
-  // hafif çizgili sarı. Not: 0035.jpg karesinde orta bant düz kırmızı, alt bant
-  // düz sarı görünüyor; fark çözülmedi.
+  // Üç bant, dikey tuğlalar, metal uçlar. O karede orta bant gümüş, alt bant
+  // çizgili sarı görünüyor; Stage 1'deki gibi giriş parıltısı kabul edildi ve
+  // renkler oyun sırasındaki 0035.jpg karesinden alındı (orta kırmızı, alt sarı).
   const band = (t, from, to, r) => {
     const out = [V('metal', from, r)];
     for (let c = from + 1; c < to; c++) out.push(V(t, c, r));
     out.push(V('metal', to, r));
     return out;
   };
-  const stage2 = [...band('yellow', 0, 17, 0), ...band('silver-s', 1, 16, 3), ...band('yellow-s', 3, 14, 6)];
+  const stage2 = [...band('yellow', 0, 17, 0), ...band('red', 1, 16, 3), ...band('yellow', 3, 14, 6)];
 
   // Stage 3 — reference-frames/0055.jpg ve user-stage-03-start.jpg (top
   // çubukta, harita sağlam; iki kare birebir aynı). Numara ekranda görünmedi;
@@ -85,8 +86,8 @@
   ];
 
   root.EXBLOCK_LEVELS = [
-    { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01.jpg', confidence: 'yüksek (alt sıra çizgileri tartışmalı)', bricks: stage1 },
-    { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg', confidence: 'yüksek (bant türleri tartışmalı)', bricks: stage2 },
+    { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: stage1 },
+    { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: stage2 },
     { id: 'spiral', stage: 3, name: 'Spiral', source: 'reference-frames/user-stage-03-start.jpg', confidence: 'yüksek', bricks: spiral },
     { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: greenSym },
   ];
