@@ -19,11 +19,13 @@
     bonusChance: 0.2,     // varsayım: Stage 2'de ~46 tuğladan ~10 baloncuk (videom_parca_01)
     // Baloncuk türleri: lazer, can (gözlem), 3'lü top ve genişlik (kullanıcının
     // hatırladığı). Oranlar varsayım.
-    bonusShares: { laser: 0.22, triple: 0.2, wide: 0.2, life: 0.08 },
+    bonusShares: { laser: 0.16, triple: 0.15, wide: 0.14, shrink: 0.1, slow: 0.1, fast: 0.08, life: 0.07 },
+    shrinkW: 130,         // varsayım: kısa çubuk (ceza)
+    slowMul: 0.7, fastMul: 1.4, // varsayım: yavaşlatma / hızlandırma çarpanları
     fireChance: 0.05,     // varsayım: kırılan tuğladan ateş topu çıkma olasılığı
     fireSpeed: 2.2,       // varsayım: ateş topu normal topun ~2 katı hızlı (kullanıcı)
     fireR: 24,            // gözlem (orta): videodaki turuncu top normalden büyük
-    wideW: 290,           // varsayım: geniş çubuk (normal 194)
+    wideW: 290,           // varsayım: geniş çubuk (normal 194); kullanıcının listesi: uzatma, kısaltma, çoklu top, lazer, yavaşlatma/hızlandırma
     laserInterval: 0.3,   // varsayım (s): lazer çubuk kendiliğinden çift ışın atar
     creatureScore: 50000, // gözlem (yüksek): yaratık yok edildiği karede +50000
     creatureFirst: 2.5,   // gözlem (orta): Stage 1'de ilk yaratık ~2.5 sn sonra
@@ -105,7 +107,7 @@
   const MENU_Y0 = 520, MENU_DY = 100;
   const SEL = { cols: 6, x0: 39, y0: 110, w: 186, h: 160, gx: 14, gy: 12 };
   const S = {
-    creatures: [], spawnT: 0, introT: 99, fireT: 0,
+    speedMul: 1, creatures: [], spawnT: 0, introT: 99, fireT: 0,
     selIndex: 0, selLimit: 0, selFrom: 'menu',
     mode: 'menu', menuIndex: 0, levelIndex: 0, score: 0, lives: RULES.startLives,
     bricks: [], balls: [], shots: [], effects: [], debris: [], bonuses: [], paddleX: (W - PADDLE.w) / 2, laser: 0,
@@ -138,7 +140,7 @@
 
   function dockBall() {
     S.balls = [{ x: 0, y: 0, vx: 0, vy: 0, docked: true }];
-    S.shots = []; S.laser = 0; S.bonuses = []; S.fireT = 0; setPaddleW(PADDLE.baseW);
+    S.shots = []; S.laser = 0; S.bonuses = []; S.fireT = 0; setPaddleW(PADDLE.baseW); S.speedMul = 1;
     syncDocked();
   }
   function syncDocked() {
@@ -183,7 +185,7 @@
     if (docked) {
       docked.docked = false;
       const a = -0.45;
-      const v = RULES.ballSpeed + RULES.ballStageStep * S.levelIndex;
+      const v = (RULES.ballSpeed + RULES.ballStageStep * S.levelIndex) * S.speedMul;
       docked.vx = Math.sin(a) * v; docked.vy = -Math.cos(a) * v;
     } else if (S.laser > 0 && S.shots.length < 4) {
       for (const dx of [26, PADDLE.w - 26]) S.shots.push({ x: S.paddleX + dx, y: PADDLE.y - 4 });
@@ -215,6 +217,11 @@
     let r = Math.random();
     for (const [k, p] of Object.entries(RULES.bonusShares)) { if (r < p) return k; r -= p; }
     return 'score';
+  }
+  // Hız ödülleri normal topların hızını çarpanla değiştirir; can kaybında sıfırlanır.
+  function setSpeedMul(m) {
+    const k = m / S.speedMul; S.speedMul = m;
+    for (const b of S.balls) if (!b.fire) { b.vx *= k; b.vy *= k; }
   }
   function setPaddleW(w) {
     const cx = S.paddleX + PADDLE.w / 2; PADDLE.w = w;
@@ -340,7 +347,7 @@
       b.y = PADDLE.y - R;
       S.score += RULES.paddleScore;
       const off = Math.max(-1, Math.min(1, (b.x - (S.paddleX + PADDLE.w / 2)) / (PADDLE.w / 2)));
-      const speed = b.fire ? Math.hypot(b.vx, b.vy) : Math.min(RULES.ballSpeedMax, Math.hypot(b.vx, b.vy) + 1);
+      const speed = b.fire ? Math.hypot(b.vx, b.vy) : Math.min(RULES.ballSpeedMax * S.speedMul, Math.hypot(b.vx, b.vy) + 1);
       b.vx = Math.sin(off * RULES.maxBounce) * speed; b.vy = -Math.cos(off * RULES.maxBounce) * speed;
       return;
     }
@@ -392,6 +399,8 @@
         if (bn.kind === 'life') S.lives++;
         if (bn.kind === 'triple') tripleBalls();
         if (bn.kind === 'wide') setPaddleW(RULES.wideW);
+        if (bn.kind === 'shrink') setPaddleW(RULES.shrinkW);
+        if (bn.kind === 'slow' || bn.kind === 'fast') setSpeedMul(bn.kind === 'slow' ? RULES.slowMul : RULES.fastMul);
 
       }
     }
@@ -503,6 +512,11 @@
       } else if (bn.kind === 'fire') {
         ctx.fillStyle = '#ff9a2a'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 10, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#fff3a0'; ctx.beginPath(); ctx.arc(bn.x - 3, bn.y - 3, 4, 0, Math.PI * 2); ctx.fill();
+      } else if (bn.kind === 'shrink') {
+        ctx.fillStyle = '#ff5a3a'; ctx.fillRect(bn.x - 7, bn.y - 4, 14, 8);
+        ctx.fillStyle = '#ffcf3a'; ctx.fillRect(bn.x - 9, bn.y - 6, 3, 12); ctx.fillRect(bn.x + 6, bn.y - 6, 3, 12);
+      } else if (bn.kind === 'slow' || bn.kind === 'fast') {
+        outlinedText(bn.kind === 'slow' ? 'S' : 'F', bn.x, bn.y + 1, 22, bn.kind === 'slow' ? '#7fd0ff' : '#ff7a4a', 'center');
       } else if (bn.kind === 'wide') {
         ctx.fillStyle = '#7dff5a'; ctx.fillRect(bn.x - 13, bn.y - 4, 26, 8);
         ctx.fillStyle = '#ffcf3a'; ctx.fillRect(bn.x - 15, bn.y - 6, 4, 12); ctx.fillRect(bn.x + 11, bn.y - 6, 4, 12);
