@@ -66,7 +66,8 @@ Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu 
 ## 2. oturum durumu (4 Ekim 2026)
 
 - Oyun `index.html` + `src/levels.js` + `src/game.js` olarak yeniden yazıldı. Mantıksal alan 1264×948, yani referans karelerinin ölçeği.
-- Haritalar: Stage 1–3 (kullanıcının gönderdiği "Stage N" kareleri) ve yeşil simetrik harita (`0550.jpg`, sırası bilinmiyor). Doğrulanmış haritalar bitince "Doğrulanmış haritalar bitti" ekranı çıkıyor.
+- Haritalar: **Stage 1–10**, kullanıcının gönderdiği "Stage N" karelerinden ölçüldü (`reference-frames/user-stage-*.jpg`). Stage 10 bitince "Stage 10 tamamlandı" ekranı çıkıyor. Sırası bilinmeyen yeşil simetrik harita (`0550.jpg`) oyunda değil, `EXBLOCK_UNPLACED` içinde bekliyor.
+- Sıradaki iş: Stage 11 ve sonrası için kareler; Stage 8 yazı altı bölgesi ve Stage 10 karesinin dosyası.
 - Menü (New Game / Continue / Exit), HUD (X can, SCORE 8 hane), Stage yazısı ve nebula arka plan referanslara göre çizildi. Continue, bölüm başında tarayıcıya kayıt tutuyor (orijinal davranış doğrulanmadı).
 - Kurallar `src/game.js` → `RULES`: başlangıç 5 can (gözlem), tuğla 1000 puan, çizgili blok 2 vuruş, metal kırılmaz (varsayım).
 - Çoklu top ve lazer yalnızca `?debug` modunda (1, 2 tuşları); hangi nesnenin bunları verdiği bilinmiyor.

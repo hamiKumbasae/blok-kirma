@@ -7,7 +7,8 @@ const assert = require('assert');
 
 const ctx = {};
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/levels.js'), 'utf8'), { globalThis: ctx });
-const levels = ctx.EXBLOCK_LEVELS;
+const levels = [...ctx.EXBLOCK_LEVELS, ...ctx.EXBLOCK_UNPLACED];
+assert.strictEqual(ctx.EXBLOCK_LEVELS.map((l) => l.stage).join(','), '1,2,3,4,5,6,7,8,9,10', 'oyun Stage 1-10 sırasıyla');
 const grid = ctx.EXBLOCK_GRID;
 
 const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b.c + (i % b.w), b.r + Math.floor(i / b.w)]);
