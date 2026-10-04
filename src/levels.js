@@ -37,8 +37,8 @@
     ...row('green', [0, 4, 8, 12, 16], 3),
     ...['green', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'green']
       .map((t, i) => R(t, i * 2, 5)),
-    // c10: oyun sırasında yeşil (birinci.mov); girişte mor, vurulunca kırmızı görünüyor.
-    ...['green', 'purple', 'blue', 'purple', 'blue', 'green', 'blue', 'purple', 'green']
+    // trim_01 (gerçek hız, temiz kare): alt sıra G P B P B P B P G.
+    ...['green', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'green']
       .map((t, i) => R(t, i * 2, 7)),
   ];
 
@@ -95,9 +95,11 @@
   // satır 0–4 metal/mor/metal/mor/metal. Bloklar ızgaraya göre çeyrek hücre
   // kayık (c = 2.25 / 4.5 ve ayna 11.5 / 13.75); karede satır başına birkaç
   // piksellik dışa kayma da var, ölçüm hatası sayıldı. Alt sıra satır 6.
-  const pillar = (cols) => cols.flatMap((c) => ['metal', 'purple', 'metal', 'purple', 'metal'].map((t, r) => R(t, c, r)));
+  // Kuleler hareketli (trim_05): game.js moveTowers konumu her karede hesaplar.
+  const pillar = (side) => [0, 2].flatMap((dc) => ['metal', 'purple', 'metal', 'purple', 'metal']
+    .map((t, r) => ({ ...R(t, (side === 'L' ? 2.3 : 11.7) + dc, r), move: 'tower', side, dc })));
   const stage4 = [
-    ...pillar([2.25, 4.5, 11.5, 13.75]),
+    ...pillar('L'), ...pillar('R'),
     ...['red', 'blue', 'metal', 'green', 'metal', 'purple', 'metal', 'yellow', 'green'].map((t, i) => R(t, i * 2, 6)),
   ];
 

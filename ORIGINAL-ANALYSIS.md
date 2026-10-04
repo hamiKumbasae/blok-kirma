@@ -143,3 +143,18 @@ Uygulandı: +1000 / +100 / +10000 puanları, kırmızı vuruş + altın halka + 
 | Ekstra can tekrar görüldü: Stage 9'da X2 → X3, Stage 10'da X2 → X3 | | yüksek |
 | Yaratık +50000 (Stage 10: 1481200 → 1531200) | | yüksek |
 | Stage 11: mavi küçük kareler çapraz çizgiler halinde; başka yöne kayıyor olabilir — oyuna eklenmedi (ilk 10 bölüm kapsamı) | `video-stage-11-intro.jpg` | — |
+
+## `trim_01`–`trim_10` (kullanıcı, uzun video 0.25x oynatılarak kaydedildi; Stage 1 → Stage 7 başı)
+
+Uzun videoda "▶▶4x" etiketsiz bölümler 1x, etiketli bölümler 4x. 0.25x kayıtta etiketsiz bölüm gerçek hızın 1/4'ü, etiketli bölüm gerçek hız. Ölçümler 1264 px genişlikteki mantıksal alana çevrildi.
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| Top hızı Stage 1 başında **~134 px/s** (kare kare izleme, 1.6 sn boyunca düz yol) | trim_01 0:30–0:42 | yüksek |
+| Top hızı Stage 4'te **~187 px/s** → bölüm başına ~+15 px/s | trim_05 0:31 (4x bölüm) | orta |
+| Çubuk hızı en fazla **~300–370 px/s** | trim_05 0:30–0:50 | orta |
+| **Stage 4 kuleleri birlikte kayıyor**: ortada birleşip duvarlara açılıyor, ~5.9 sn döngü, sıralar hafif dalgalı. Önceki "çeyrek hücre kayık" ölçüm bu hareketten | `trim-stage-04-towers-meet.jpg` | yüksek |
+| Stage 1 alt sıra **G P B P B P B P G** (ortası mor); `birinci.mov`'dan çıkan "yeşil" düzeltmesi yanlıştı, geri alındı | `trim-stage-01-clean.jpg` | yüksek |
+| Baloncuklar yavaş düşüyor (~110 px/s) | | orta |
+| Menü öncesi cihaz menüsü: "Game → ExBlock / Poker / BricksLay / Bomb Hexa" | trim_01 0:00 | yüksek |
+| Turuncu parlak top + hızlı alev mermisi (tuğla kırıyor, +1000 / L için +2100); tetikleyen ödül görülmedi → **uygulanmadı** | trim_09 1:28–1:52 | düşük |
