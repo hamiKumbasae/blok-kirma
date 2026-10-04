@@ -90,3 +90,19 @@ Güncelleme — kullanıcının ikinci Stage 1 karesi (`user-stage-01b.jpg`, pua
 
 - Stage 6→7'de can X 4 → X 2, 7→8'de X 2 → X 3, 9→10'da X 2 → X 3: oyun içinde ekstra can kazanılıyor.
 - Ölçüm aracı: sol/sağ iç duvar kenarından ızgara aralığı (alan genişliği = 19 hücre) ve x0 (= iç kenar + 0.49 hücre), HUD'ın alt kenarından satır 0 bulunur; her satır ortasından parlak bölümler okunur. Stage 4 ve 6 ile doğrulandı.
+
+## Kullanıcı videosu `birinci.mov` (15 sn ekran kaydı, uzun YouTube videosunun ~0:08–0:30 bölümü, Stage 1)
+
+Kayıt YouTube oynatıcısının ekran görüntüsü olduğu için kareler tekrarlanıyor ve oynatıcı arayüzü görüntünün üstüne biniyor. Bu yüzden **top/çubuk hızı güvenilir ölçülemedi**. Puan sayacı ise kare kare izlendi:
+
+| Bulgu | Kanıt | Güven |
+| --- | --- | --- |
+| Kırılan her tuğla **+1000** | 0→1000, 1100→2100, 2200→3200 … | yüksek |
+| Top çubuğa her çarptığında **+100** | 1000→1100, 2100→2200, 3200→3300; artış top çubuktayken oluyor | yüksek |
+| Baloncuk içindeki gümüş top yakalanınca **+10000** | 15800→25900, 34200→44200; baloncuk çubuğa değdiği karede | yüksek |
+| Vurulan tuğla kısa süre **kırmızı** yanıyor, sonra yerinde iki **altın halka** çıkıp kayboluyor; gri **kırıntılar** aşağı saçılıyor | `video-break-rings.jpg` | yüksek |
+| Baloncuklar kırılan bazı tuğlalardan düşüyor; hangi tuğladan düştüğü bilinmiyor | `video-bonus-bubble.jpg` | orta |
+| Kahverengi gözlü **yaratıklar** üstten girip tuğlaların üzerinde dolaşıyor, bazıları tuğla üstünde küçük bir öbek bırakıyor. Topla etkileşimi görülmedi | `video-creature.jpg` | gözlem; işlev bilinmiyor |
+| Stage 1 alt sıranın ortası (c10) oyun sırasında **yeşil**; "Stage 1" yazısında mor, `0010.jpg`'de kırmızı (vurulma anı) | k001 karesi | yüksek |
+
+Uygulandı: +1000 / +100 / +10000 puanları, kırmızı vuruş + altın halka + kırıntı animasyonu, baloncuk bonusu (düşme olasılığı %12 varsayım). Yaratıklar henüz uygulanmadı.

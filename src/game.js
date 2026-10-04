@@ -13,7 +13,11 @@
   // varsayımdır; ayrıntılar ORIGINAL-ANALYSIS.md içinde.
   const RULES = {
     startLives: 5,        // gözlem (orta): 0010.jpg puan 0 iken X 5
-    brickScore: 1000,     // varsayım (düşük): 0030→0035 son tuğla + geçiş = +1000
+    brickScore: 1000,     // gözlem (yüksek): birinci.mov, her kırılan tuğla +1000
+    paddleScore: 100,     // gözlem (yüksek): birinci.mov, top çubuğa her çarpışta +100
+    bonusScore: 10000,    // gözlem (yüksek): birinci.mov, baloncuk yakalanınca +10000
+    bonusChance: 0.12,    // varsayım: hangi tuğladan baloncuk düştüğü bilinmiyor
+    bonusFall: 240,       // varsayım (px/s)
     stripedHits: 2,       // varsayım: çizgili blokların işlevi bilinmiyor
     metalBreakable: false, // varsayım: metal bloklar bölüm bitişine sayılmıyor
     ballSpeed: 560,       // varsayım (px/s, 1264 px genişlikte)
@@ -81,7 +85,7 @@
   const MENU = ['New Game', 'Continue', 'Exit'];
   const S = {
     mode: 'menu', menuIndex: 0, levelIndex: 0, score: 0, lives: RULES.startLives,
-    bricks: [], balls: [], shots: [], paddleX: (W - PADDLE.w) / 2, laser: 0,
+    bricks: [], balls: [], shots: [], effects: [], debris: [], bonuses: [], paddleX: (W - PADDLE.w) / 2, laser: 0,
     timer: 0, paused: false,
   };
   const keys = new Set();
@@ -107,7 +111,7 @@
 
   function dockBall() {
     S.balls = [{ x: 0, y: 0, vx: 0, vy: 0, docked: true }];
-    S.shots = []; S.laser = 0;
+    S.shots = []; S.laser = 0; S.bonuses = [];
     syncDocked();
   }
   function syncDocked() {
@@ -152,10 +156,24 @@
   }
 
   // ---------- fizik ----------
+  // Kırılma: tuğla kısa süre kırmızı yanar, sonra iki altın halka ve gri
+  // kırıntılar çıkar (birinci.mov). Bazı tuğlalardan bonus baloncuk düşer.
+  function breakBrick(br) {
+    br.alive = false; S.score += RULES.brickScore;
+    const xs = br.rects.map((r) => r.x), ys = br.rects.map((r) => r.y);
+    const x0 = Math.min(...xs), y0 = Math.min(...ys);
+    const x1 = Math.max(...br.rects.map((r) => r.x + r.w)), y1 = Math.max(...br.rects.map((r) => r.y + r.h));
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    S.effects.push({ rects: br.rects, x: cx, y: cy, t: 0 });
+    for (let i = 0; i < 6; i++) {
+      S.debris.push({ x: x0 + Math.random() * (x1 - x0), y: cy, vx: (Math.random() - 0.5) * 160, vy: 60 + Math.random() * 200, t: 0 });
+    }
+    if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy });
+  }
   function hitBrick(br) {
     if (!Number.isFinite(br.hits)) { br.flash = 0.15; return; }
     br.hits--; br.flash = 0.15;
-    if (br.hits <= 0) { br.alive = false; S.score += RULES.brickScore; }
+    if (br.hits <= 0) breakBrick(br);
   }
 
   function collideBall(b, px, py) {
@@ -181,6 +199,7 @@
     if (b.vy > 0 && py + BALL_R <= PADDLE.y + 2 && b.y + BALL_R >= PADDLE.y &&
         b.x >= S.paddleX - BALL_R && b.x <= S.paddleX + PADDLE.w + BALL_R) {
       b.y = PADDLE.y - BALL_R;
+      S.score += RULES.paddleScore;
       const off = Math.max(-1, Math.min(1, (b.x - (S.paddleX + PADDLE.w / 2)) / (PADDLE.w / 2)));
       const speed = Math.min(RULES.ballSpeedMax, Math.hypot(b.vx, b.vy) + 6);
       b.vx = Math.sin(off * RULES.maxBounce) * speed; b.vy = -Math.cos(off * RULES.maxBounce) * speed;
@@ -215,6 +234,18 @@
     }
     S.shots = S.shots.filter((s) => !s.dead && s.y > FIELD_TOP);
 
+    for (const e of S.effects) e.t += dt;
+    S.effects = S.effects.filter((e) => e.t < 0.45);
+    for (const d of S.debris) { d.t += dt; d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 600 * dt; }
+    S.debris = S.debris.filter((d) => d.t < 1.2 && d.y < H);
+    for (const bn of S.bonuses) {
+      bn.y += RULES.bonusFall * dt;
+      if (bn.y + 22 >= PADDLE.y && bn.y - 22 <= PADDLE.y + PADDLE.h && bn.x >= S.paddleX - 10 && bn.x <= S.paddleX + PADDLE.w + 10) {
+        bn.caught = true; S.score += RULES.bonusScore;
+      }
+    }
+    S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
+
     if (S.balls.length === 0) {
       if (S.lives === 0) { S.mode = 'gameover'; save.clear(); return; }
       S.lives--; dockBall();
@@ -242,7 +273,7 @@
       const left = !br.set.has(c - 1 + ',' + r), right = !br.set.has(c + 1 + ',' + r);
       const x = rc.x + (left ? 2 : 0), y = rc.y + (top ? 2 : 0);
       const w = rc.w - (left ? 2 : 0) - (right ? 2 : 0), h = rc.h - (top ? 2 : 0) - (bottom ? 2 : 0);
-      ctx.fillStyle = br.flash > 0 ? shade(base, 0.45) : base;
+      ctx.fillStyle = br.flash > 0 ? '#e0402a' : base;
       ctx.fillRect(x, y, w, h);
       if (br.t.endsWith('-s') || br.t === 'metal') {
         ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
@@ -282,6 +313,31 @@
       ctx.fillStyle = '#c2381b'; ctx.fillRect(ex + 4, y + h + 2, 6, 6);
     }
     if (laser) { ctx.fillStyle = '#fff6c0'; for (const dx of [26, w - 26]) ctx.fillRect(x + dx - 3, y - 14, 6, 14); }
+  }
+
+  function drawEffects() {
+    for (const e of S.effects) {
+      if (e.t < 0.1) { ctx.fillStyle = '#e0402a'; for (const r of e.rects) ctx.fillRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4); continue; }
+      const k = (e.t - 0.1) / 0.35, rad = 14 + k * 8;
+      ctx.globalAlpha = 1 - k * 0.7; ctx.lineWidth = 7;
+      for (const dx of [-rad, rad]) {
+        const g = ctx.createLinearGradient(0, e.y - rad, 0, e.y + rad);
+        g.addColorStop(0, '#fff3a0'); g.addColorStop(1, k > 0.5 ? '#d0501a' : '#e0a020');
+        ctx.strokeStyle = g; ctx.beginPath(); ctx.arc(e.x + dx, e.y, rad, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.strokeStyle = 'rgba(200,200,210,.75)'; ctx.lineWidth = 4;
+    for (const d of S.debris) {
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.vx * 0.03, d.y - d.vy * 0.03); ctx.stroke();
+    }
+    for (const bn of S.bonuses) {
+      const g = ctx.createRadialGradient(bn.x - 6, bn.y - 6, 2, bn.x, bn.y, 22);
+      g.addColorStop(0, 'rgba(220,235,255,.95)'); g.addColorStop(0.7, 'rgba(90,130,220,.55)'); g.addColorStop(1, 'rgba(60,90,200,.25)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bn.x, bn.y, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(210,225,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#f0c840'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
+    }
   }
 
   function drawBall(b) {
@@ -367,6 +423,7 @@
     if (S.mode === 'menu') { drawMenu(); return; }
     if (S.mode === 'exit') { panel('Exit', ['Enter / Boşluk: menüye dön']); return; }
     for (const br of S.bricks) if (br.alive) drawBrick(br);
+    drawEffects();
     ctx.fillStyle = '#fff6c0';
     for (const s of S.shots) ctx.fillRect(s.x - 3, s.y - 26, 6, 26);
     drawPaddle();
