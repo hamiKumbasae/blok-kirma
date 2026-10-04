@@ -6,7 +6,8 @@
 //
 // Türler:
 //   red, blue, yellow, green, purple      → düz renkli tuğla
-//   red-s, purple-s, green-s, silver-s    → çizgili/parlak görünümlü tuğla
+//   red-s, blue-s, yellow-s, purple-s,
+//   green-s, silver-s                     → çizgili/parlak görünümlü tuğla
 //   metal                                 → perçinli gri-bej blok
 // Çizgili ve metal blokların dayanıklılığı videodan DOĞRULANMADI; davranış
 // game.js içindeki RULES nesnesinde varsayım olarak tanımlı.
@@ -20,7 +21,9 @@
   const L = (t, cells) => ({ t, cells });
   const row = (t, cols, r, w = 2, h = 1) => cols.map((c) => R(t, c, r, w, h));
 
-  // Stage 1 — reference-frames/0010.jpg (puan 0, tuğlalar sağlam).
+  // Stage 1 — reference-frames/user-stage-01.jpg ("Stage 1" yazılı başlangıç).
+  // Not: uzun videonun 0010.jpg karesinde alt sıra çizgisiz ve ortası kırmızı
+  // (G P B P B R B P G). Bu fark çözülmedi; bkz. ORIGINAL-ANALYSIS.md.
   const stage1 = [
     ...row('red', [6, 10], 0),
     ...row('blue', [3, 8, 13], 1),
@@ -28,23 +31,25 @@
     ...row('green', [0, 4, 8, 12, 16], 3),
     ...['green', 'blue', 'purple', 'blue', 'purple', 'blue', 'purple', 'blue', 'green']
       .map((t, i) => R(t, i * 2, 5)),
-    ...['green', 'purple', 'blue', 'purple', 'blue', 'red', 'blue', 'purple', 'green']
+    ...['green', 'purple-s', 'blue-s', 'purple-s', 'blue-s', 'purple-s', 'blue-s', 'purple-s', 'green']
       .map((t, i) => R(t, i * 2, 7)),
   ];
 
-  // Stage 2 — reference-frames/0035.jpg (Stage 1'in son tuğlasından hemen sonra,
-  // top çubuğun üstünde, tüm tuğlalar sağlam). Üç bant, dikey tuğlalar, metal uçlar.
+  // Stage 2 — reference-frames/user-stage-02.jpg ("Stage 2" yazılı başlangıç).
+  // Üç bant, dikey tuğlalar, metal uçlar. Orta bant gümüş çizgili, alt bant
+  // hafif çizgili sarı. Not: 0035.jpg karesinde orta bant düz kırmızı, alt bant
+  // düz sarı görünüyor; fark çözülmedi.
   const band = (t, from, to, r) => {
     const out = [V('metal', from, r)];
     for (let c = from + 1; c < to; c++) out.push(V(t, c, r));
     out.push(V('metal', to, r));
     return out;
   };
-  const stage2 = [...band('yellow', 0, 17, 0), ...band('red', 1, 16, 3), ...band('yellow', 3, 14, 6)];
+  const stage2 = [...band('yellow', 0, 17, 0), ...band('silver-s', 1, 16, 3), ...band('yellow-s', 3, 14, 6)];
 
-  // Spiral — reference-frames/0055.jpg. Stage 2'den sonra görülen ilk harita;
-  // bölüm numarası ekranda görünmedi (muhtemelen 3). Kare haritanın tamamını
-  // gösteriyor gibi, ancak kırılmış parça olup olmadığı başka kareyle doğrulanmadı.
+  // Stage 3 — reference-frames/0055.jpg ve user-stage-03-start.jpg (top
+  // çubukta, harita sağlam; iki kare birebir aynı). Numara ekranda görünmedi;
+  // kullanıcı Stage 1 ve 2'nin ardından sırayla gönderdi.
   const spiral = [
     L('blue', [[1, 0], [2, 0], [1, 1]]), V('blue', 1, 2), V('blue', 1, 4),
     ...row('yellow', [3, 5, 7, 9, 11, 13], 0),
@@ -80,9 +85,9 @@
   ];
 
   root.EXBLOCK_LEVELS = [
-    { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/0010.jpg', confidence: 'yüksek', bricks: stage1 },
-    { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/0035.jpg', confidence: 'yüksek', bricks: stage2 },
-    { id: 'spiral', stage: null, name: 'Spiral (muhtemelen 3)', source: 'reference-frames/0055.jpg', confidence: 'orta', bricks: spiral },
+    { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01.jpg', confidence: 'yüksek (alt sıra çizgileri tartışmalı)', bricks: stage1 },
+    { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg', confidence: 'yüksek (bant türleri tartışmalı)', bricks: stage2 },
+    { id: 'spiral', stage: 3, name: 'Spiral', source: 'reference-frames/user-stage-03-start.jpg', confidence: 'yüksek', bricks: spiral },
     { id: 'green-symmetric', stage: null, name: 'Yeşil simetri (sıra bilinmiyor)', source: 'reference-frames/0550.jpg', confidence: 'orta', bricks: greenSym },
   ];
   root.EXBLOCK_GRID = { cols: 18, x0: 49, y0: 137, cw: 65, ch: 63.5 };

@@ -63,6 +63,16 @@ Son kare Stage 15'i açıkça gösteriyor. **“Oyun 15 bölüm” veya “kesin
 
 Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu bulunmadı. Aynı arşivleri tekrar aramak şu an öncelik değil.
 
+## 2. oturum durumu (4 Ekim 2026)
+
+- Oyun `index.html` + `src/levels.js` + `src/game.js` olarak yeniden yazıldı. Mantıksal alan 1264×948, yani referans karelerinin ölçeği.
+- Haritalar: Stage 1–3 (kullanıcının gönderdiği "Stage N" kareleri) ve yeşil simetrik harita (`0550.jpg`, sırası bilinmiyor). Doğrulanmış haritalar bitince "Doğrulanmış haritalar bitti" ekranı çıkıyor.
+- Menü (New Game / Continue / Exit), HUD (X can, SCORE 8 hane), Stage yazısı ve nebula arka plan referanslara göre çizildi. Continue, bölüm başında tarayıcıya kayıt tutuyor (orijinal davranış doğrulanmadı).
+- Kurallar `src/game.js` → `RULES`: başlangıç 5 can (gözlem), tuğla 1000 puan, çizgili blok 2 vuruş, metal kırılmaz (varsayım).
+- Çoklu top ve lazer yalnızca `?debug` modunda (1, 2 tuşları); hangi nesnenin bunları verdiği bilinmiyor.
+- Testler: `node tests/levels.test.js`. Tarayıcıda menü, 4 harita ve kısa oynanış hatasız çalıştı.
+- **YouTube bu ortamdan açılamıyor (bot doğrulaması).** Yeni haritalar için kullanıcıdan "Stage N" kareleri alınmalı. Ayrıntı ve çözülmemiş farklar için ORIGINAL-ANALYSIS.md.
+
 ## Devam edecek Codex için işler
 
 Önce araştırmayı tamamla, sonra oyun davranışını değiştir:

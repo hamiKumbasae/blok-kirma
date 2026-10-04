@@ -28,7 +28,7 @@
 
   const COLORS = {
     red: '#d9542f', blue: '#4b86da', yellow: '#ecd23f', green: '#4dbd3a', purple: '#c48fe2',
-    'red-s': '#d83a2c', 'purple-s': '#9c8fe0', 'green-s': '#6cbb3a', 'silver-s': '#d9dde6', metal: '#bcb99c',
+    'red-s': '#d83a2c', 'blue-s': '#7fb2f0', 'yellow-s': '#f2d22e', 'purple-s': '#d7a8f2', 'green-s': '#6cbb3a', 'silver-s': '#c9cde0', metal: '#bcb99c',
   };
 
   const canvas = document.querySelector('canvas');
@@ -86,7 +86,10 @@
   };
   const keys = new Set();
 
-  const cellRect = (c, r) => ({ x: GRID.x0 + c * GRID.cw, y: GRID.y0 + r * GRID.ch, w: GRID.cw, h: GRID.ch });
+  const cellRect = (c, r) => {
+    const x = Math.round(GRID.x0 + c * GRID.cw), y = Math.round(GRID.y0 + r * GRID.ch);
+    return { x, y, w: Math.round(GRID.x0 + (c + 1) * GRID.cw) - x, h: Math.round(GRID.y0 + (r + 1) * GRID.ch) - y };
+  };
   const cellsOf = (b) => b.cells || Array.from({ length: b.w * b.h }, (_, i) => [b.c + (i % b.w), b.r + Math.floor(i / b.w)]);
 
   function buildLevel() {
@@ -303,6 +306,8 @@
     }
     ctx.fillStyle = 'rgba(200,195,255,.55)';
     ctx.fillRect(WALL_L - 3, HUD_H, 3, H - HUD_H); ctx.fillRect(WALL_R, HUD_H, 3, H - HUD_H);
+    // Menüde üst bilgi çubuğu yok (user-menu.jpg); yalnızca ince üst kenar.
+    if (S.mode === 'menu' || S.mode === 'exit') { ctx.fillStyle = '#241878'; ctx.fillRect(0, 0, W, 8); return; }
     // HUD çubuğu
     const g = ctx.createLinearGradient(0, 0, 0, HUD_H);
     g.addColorStop(0, '#6d61d8'); g.addColorStop(0.5, '#3d2fa0'); g.addColorStop(1, '#241878');
@@ -344,13 +349,15 @@
   function drawMenu() {
     const t = ctx.createLinearGradient(0, 160, 0, 300);
     t.addColorStop(0, '#fff6a0'); t.addColorStop(0.5, '#f5c23a'); t.addColorStop(1, '#d4641a');
-    outlinedText('ExBlock', W / 2, 240, 140, t, 'center');
+    outlinedText('ExBlock', W / 2 + 10, 235, 190, t, 'center');
     const hasSave = !!save.read();
     MENU.forEach((item, i) => {
-      const y = 470 + i * 110;
+      const y = 570 + i * 103;
       const off = item === 'Continue' && !hasSave;
-      outlinedText(item, W / 2, y, 64, off ? '#8f8a6a' : '#ffd84a', 'center');
-      if (i === S.menuIndex) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5; ctx.strokeRect(W / 2 - 250, y - 46, 500, 92); }
+      const g = ctx.createLinearGradient(0, y - 30, 0, y + 30);
+      g.addColorStop(0, '#fffbe0'); g.addColorStop(0.5, '#f5c23a'); g.addColorStop(1, '#c8701a');
+      outlinedText(item, W / 2, y, 58, off ? '#8f8a6a' : g, 'center');
+      if (i === S.menuIndex) { ctx.strokeStyle = '#d8d8e8'; ctx.lineWidth = 6; ctx.strokeRect(W / 2 - 268, y - 45, 536, 90); }
     });
   }
 
@@ -428,7 +435,7 @@
   canvas.addEventListener('pointerdown', (e) => {
     const p = toLogical(e);
     if (S.mode === 'menu') {
-      const i = Math.round((p.y - 470) / 110);
+      const i = Math.round((p.y - 570) / 103);
       if (i >= 0 && i < MENU.length) { S.menuIndex = i; menuSelect(); }
       return;
     }
