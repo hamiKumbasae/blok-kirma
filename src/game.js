@@ -20,6 +20,9 @@
     // Baloncuk türleri: lazer, can (gözlem), 3'lü top ve genişlik (kullanıcının
     // hatırladığı). Oranlar varsayım.
     bonusShares: { laser: 0.22, triple: 0.2, wide: 0.2, life: 0.08 },
+    fireChance: 0.05,     // varsayım: kırılan tuğladan ateş topu çıkma olasılığı
+    fireSpeed: 2.2,       // varsayım: ateş topu normal topun ~2 katı hızlı (kullanıcı)
+    fireR: 24,            // gözlem (orta): videodaki turuncu top normalden büyük
     wideW: 290,           // varsayım: geniş çubuk (normal 194)
     laserInterval: 0.3,   // varsayım (s): lazer çubuk kendiliğinden çift ışın atar
     creatureScore: 50000, // gözlem (yüksek): yaratık yok edildiği karede +50000
@@ -200,7 +203,13 @@
     for (let i = 0; i < 6; i++) {
       S.debris.push({ x: x0 + Math.random() * (x1 - x0), y: cy, vx: (Math.random() - 0.5) * 160, vy: 60 + Math.random() * 200, t: 0 });
     }
-    if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy, kind: pickBonusKind() });
+    // trim_09 1:32: ateş topu bir tuğla kırıldığı yerde ortaya çıkıyor (baloncuk değil).
+    if (Math.random() < RULES.fireChance) spawnFire(cx, cy);
+    else if (Math.random() < RULES.bonusChance) S.bonuses.push({ x: cx, y: cy, kind: pickBonusKind() });
+  }
+  function spawnFire(x, y) {
+    const v = (RULES.ballSpeed + RULES.ballStageStep * S.levelIndex) * RULES.fireSpeed, a = (Math.random() - 0.5) * 1.2;
+    S.balls.push({ x, y, vx: v * Math.sin(a), vy: v * Math.cos(a), docked: false, fire: true, r: RULES.fireR });
   }
   function pickBonusKind() {
     let r = Math.random();
@@ -302,13 +311,17 @@
     }
   }
 
+  // Ateş topu (kullanıcının hatırladığı + videodaki turuncu top): kırılabilen
+  // tuğlaların içinden geçip hepsini tek seferde kırar; metalden seker.
   function collideBall(b, px, py) {
+    const R = b.r || BALL_R;
     for (const br of S.bricks) {
       if (!br.alive) continue;
       for (const r of br.rects) {
         const nx = Math.max(r.x, Math.min(b.x, r.x + r.w)), ny = Math.max(r.y, Math.min(b.y, r.y + r.h));
-        if ((b.x - nx) ** 2 + (b.y - ny) ** 2 > BALL_R * BALL_R) continue;
-        const fromSide = px + BALL_R <= r.x || px - BALL_R >= r.x + r.w;
+        if ((b.x - nx) ** 2 + (b.y - ny) ** 2 > R * R) continue;
+        if (b.fire && Number.isFinite(br.hits)) { br.hits = 1; hitBrick(br); break; }
+        const fromSide = px + R <= r.x || px - R >= r.x + r.w;
         if (fromSide) { b.vx = -b.vx; b.x = px; } else { b.vy = -b.vy; b.y = py; }
         hitBrick(br);
         return;
@@ -317,17 +330,17 @@
   }
 
   function stepBall(b, dt) {
-    const px = b.x, py = b.y;
+    const px = b.x, py = b.y, R = b.r || BALL_R;
     b.x += b.vx * dt; b.y += b.vy * dt;
-    if (b.x < WALL_L + BALL_R) { b.x = WALL_L + BALL_R; b.vx = Math.abs(b.vx); }
-    if (b.x > WALL_R - BALL_R) { b.x = WALL_R - BALL_R; b.vx = -Math.abs(b.vx); }
-    if (b.y < FIELD_TOP + BALL_R) { b.y = FIELD_TOP + BALL_R; b.vy = Math.abs(b.vy); }
-    if (b.vy > 0 && py + BALL_R <= PADDLE.y + 2 && b.y + BALL_R >= PADDLE.y &&
-        b.x >= S.paddleX - BALL_R && b.x <= S.paddleX + PADDLE.w + BALL_R) {
-      b.y = PADDLE.y - BALL_R;
+    if (b.x < WALL_L + R) { b.x = WALL_L + R; b.vx = Math.abs(b.vx); }
+    if (b.x > WALL_R - R) { b.x = WALL_R - R; b.vx = -Math.abs(b.vx); }
+    if (b.y < FIELD_TOP + R) { b.y = FIELD_TOP + R; b.vy = Math.abs(b.vy); }
+    if (b.vy > 0 && py + R <= PADDLE.y + 2 && b.y + R >= PADDLE.y &&
+        b.x >= S.paddleX - R && b.x <= S.paddleX + PADDLE.w + R) {
+      b.y = PADDLE.y - R;
       S.score += RULES.paddleScore;
       const off = Math.max(-1, Math.min(1, (b.x - (S.paddleX + PADDLE.w / 2)) / (PADDLE.w / 2)));
-      const speed = Math.min(RULES.ballSpeedMax, Math.hypot(b.vx, b.vy) + 1);
+      const speed = b.fire ? Math.hypot(b.vx, b.vy) : Math.min(RULES.ballSpeedMax, Math.hypot(b.vx, b.vy) + 1);
       b.vx = Math.sin(off * RULES.maxBounce) * speed; b.vy = -Math.cos(off * RULES.maxBounce) * speed;
       return;
     }
@@ -379,6 +392,7 @@
         if (bn.kind === 'life') S.lives++;
         if (bn.kind === 'triple') tripleBalls();
         if (bn.kind === 'wide') setPaddleW(RULES.wideW);
+
       }
     }
     S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
@@ -486,6 +500,9 @@
       if (bn.kind === 'triple') {
         ctx.fillStyle = '#ffffff';
         for (const [dx, dy] of [[-6, 4], [6, 4], [0, -6]]) { ctx.beginPath(); ctx.arc(bn.x + dx, bn.y + dy, 5, 0, Math.PI * 2); ctx.fill(); }
+      } else if (bn.kind === 'fire') {
+        ctx.fillStyle = '#ff9a2a'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff3a0'; ctx.beginPath(); ctx.arc(bn.x - 3, bn.y - 3, 4, 0, Math.PI * 2); ctx.fill();
       } else if (bn.kind === 'wide') {
         ctx.fillStyle = '#7dff5a'; ctx.fillRect(bn.x - 13, bn.y - 4, 26, 8);
         ctx.fillStyle = '#ffcf3a'; ctx.fillRect(bn.x - 15, bn.y - 6, 4, 12); ctx.fillRect(bn.x + 11, bn.y - 6, 4, 12);
@@ -522,6 +539,18 @@
   }
 
   function drawBall(b) {
+    if (b.fire) {
+      const R = b.r, sp = Math.hypot(b.vx, b.vy) || 1;
+      ctx.save(); ctx.shadowColor = 'rgba(255,150,30,.9)'; ctx.shadowBlur = 24;
+      const tg = ctx.createLinearGradient(b.x, b.y, b.x - b.vx / sp * 90, b.y - b.vy / sp * 90);
+      tg.addColorStop(0, 'rgba(255,170,40,.75)'); tg.addColorStop(1, 'rgba(255,90,20,0)');
+      ctx.strokeStyle = tg; ctx.lineWidth = R * 1.4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx / sp * 90, b.y - b.vy / sp * 90); ctx.stroke();
+      const fg = ctx.createRadialGradient(b.x - 6, b.y - 6, 3, b.x, b.y, R);
+      fg.addColorStop(0, '#fffbe0'); fg.addColorStop(0.45, '#ffd84a'); fg.addColorStop(1, '#e0601a');
+      ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(b.x, b.y, R, 0, Math.PI * 2); ctx.fill();
+      ctx.restore(); return;
+    }
     const g = ctx.createRadialGradient(b.x - 5, b.y - 5, 2, b.x, b.y, BALL_R);
     g.addColorStop(0, '#ffffff'); g.addColorStop(0.6, '#cfd3d8'); g.addColorStop(1, '#7b8088');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2); ctx.fill();

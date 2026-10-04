@@ -191,3 +191,4 @@ Uzun videoda "▶▶4x" etiketsiz bölümler 1x, etiketli bölümler 4x. 0.25x k
 - **Genişlik** ödülü var → uygulandı: çubuk 194'ten 290'a genişler; can kaybı veya bölüm sonunda normale döner (süre varsayım).
 - Lazer ("ateş") ışınları orijinalde daha kalın ve etkili → ışınlar kalın, parlak ve uzun izli yapıldı.
 - Baloncuk görünüşleri (3 beyaz nokta, yeşil çubuk simgesi, pembe can) varsayım; orijinal simgeler henüz eşleştirilmedi.
+- **Ateş topu** (kullanıcı + trim_09 1:20–1:32): büyük sarı/turuncu top, kırılan bir tuğlanın yerinden çıkıyor (aynı karede altın halkalar, puan +1000; baloncuk yakalanmadı). Kullanıcıya göre tuğlaların içinden geçerek kırıyor, normal toptan çok daha hızlı ve normal top kaybolsa bile ateş topu varken oyun sürüyor → uygulandı. Çıkma olasılığı (%5), hızı (2.2×) ve metalden sekmesi varsayım.
