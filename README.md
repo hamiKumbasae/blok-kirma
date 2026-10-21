@@ -2,7 +2,7 @@
 
 > **Not:** Bu proje, Topfield uydu alıcılarındaki *ExBlock* oyunundan esinlenen, kâr amacı gütmeyen bağımsız bir hayran yapımıdır. Orijinal oyunun kodu, görselleri veya sesleri kullanılmamıştır; tüm kod ve çizimler sıfırdan yazılmıştır. Topfield ve ExBlock adları sahiplerine aittir; bu proje onlarla bağlantılı değildir ve onlar tarafından onaylanmamıştır. Hak sahiplerinin talebi olursa içerik kaldırılır.
 
-**▶ Oyna:** https://hamikumbasae.github.io/exblock/
+**▶ Oyna:** https://hamikumbasae.github.io/Blokk-k-rma./
 
 Bağlantı, depo ayarlarında GitHub Pages açıkken çalışır (Settings → Pages → Source: GitHub Actions; gizli depoda ücretli plan gerekir).
 
