@@ -1,4 +1,4 @@
-// ExBlock yeniden yapım — oyun motoru.
+// BlokYıldızı — oyun motoru (ExBlock'tan esinlenen hayran yapımı).
 // Mantıksal alan 1264×948: referans karelerindeki oyun görüntüsünün piksel
 // ölçeği. Böylece levels.js ve aşağıdaki ölçüler doğrudan karelerden okunabilir.
 (function () {
@@ -637,7 +637,7 @@
   function drawMenu() {
     const t = ctx.createLinearGradient(0, 160, 0, 300);
     t.addColorStop(0, '#fff6a0'); t.addColorStop(0.5, '#f5c23a'); t.addColorStop(1, '#d4641a');
-    outlinedText('ExBlock', W / 2 + 10, 235, 190, t, 'center');
+    outlinedText('BlokYıldızı', W / 2, 235, 150, t, 'center');
     const hasSave = !!save.read();
     MENU.forEach((item, i) => {
       const y = MENU_Y0 + i * MENU_DY;

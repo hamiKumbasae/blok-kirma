@@ -1,4 +1,6 @@
-# Yıldız Blok — ExBlock yeniden yapım çalışması
+# BlokYıldızı
+
+> **Not:** Bu proje, Topfield uydu alıcılarındaki *ExBlock* oyunundan esinlenen, kâr amacı gütmeyen bağımsız bir hayran yapımıdır. Orijinal oyunun kodu, görselleri veya sesleri kullanılmamıştır; tüm kod ve çizimler sıfırdan yazılmıştır. Topfield ve ExBlock adları sahiplerine aittir; bu proje onlarla bağlantılı değildir ve onlar tarafından onaylanmamıştır. Hak sahiplerinin talebi olursa içerik kaldırılır.
 
 **▶ Oyna:** https://hamikumbasae.github.io/exblock/
 
@@ -99,3 +101,6 @@ Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu 
 - [ ] Oynanışı tarayıcıda doğrula: başlatma, bölüm geçişi, çoklu top, can kaybı, duraklatma, yeniden başlama ve mobil kontroller. Görsel karşılaştırma kareleri kaydet.
 
 Son kullanıcı talimatı: limiti tüketmeden düzgün bir noktada dur, yöntemi ve kalan işleri README'ye yaz, GitHub'a pushla. Araştırmayı baştan başlatma; bu kayıt ve kaynak görüntülerden devam et. Kullanıcı yeniden devam istediğinde bu iş sırasını izle.
+
+
+> `reference-frames/` klasöründeki karşılaştırma kareleri telif nedeniyle depoda tutulmuyor (yerel çalışma klasörü, `.gitignore`).
