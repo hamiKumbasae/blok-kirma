@@ -791,8 +791,21 @@
   // ---------- döngü ----------
   const STEP = 1 / 240;
   let last = performance.now(), acc = 0;
+  // Oyun hızı (orijinal TV kutusu oyunu yavaş; varsayılan 1.5×). Hız düğmesi / H tuşu değiştirir.
+  const SPEEDS = [1, 1.5, 2, 2.5];
+  let gameSpeed = 1.5;
+  try { const v = +localStorage.getItem('blok-hiz'); if (SPEEDS.includes(v)) gameSpeed = v; } catch { /* yok say */ }
+  const speedBtn = document.getElementById('speed');
+  const showSpeed = () => { if (speedBtn) speedBtn.textContent = 'Hız ' + gameSpeed + '×'; };
+  function cycleSpeed() {
+    gameSpeed = SPEEDS[(SPEEDS.indexOf(gameSpeed) + 1) % SPEEDS.length]; showSpeed();
+    try { localStorage.setItem('blok-hiz', String(gameSpeed)); } catch { /* yok say */ }
+  }
+  if (speedBtn) speedBtn.onclick = cycleSpeed;
+  window.addEventListener('keydown', (e) => { if (e.key === 'h' || e.key === 'H') cycleSpeed(); });
+  showSpeed();
   function frame(t) {
-    acc += Math.min((t - last) / 1000, 0.05); last = t;
+    acc += Math.min((t - last) / 1000, 0.05) * gameSpeed; last = t;
     while (acc >= STEP) { update(STEP); acc -= STEP; }
     draw();
     requestAnimationFrame(frame);
