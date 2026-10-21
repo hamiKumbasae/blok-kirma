@@ -105,7 +105,7 @@
   const MENU = ['New Game', 'Continue', 'Stage Select', 'Exit'];
   // Stage Select bu yeniden yapıma eklendi; orijinal menüde yok.
   const MENU_Y0 = 520, MENU_DY = 100;
-  const SEL = { cols: 8, x0: 32, y0: 105, w: 140, h: 124, gx: 10, gy: 14 };
+  const SEL = { cols: 10, x0: 28, y0: 92, w: 116, h: 96, gx: 7, gy: 6 };
   const S = {
     speedMul: 1, creatures: [], spawnT: 0, introT: 99, fireT: 0,
     selIndex: 0, selLimit: 0, selFrom: 'menu',
@@ -653,7 +653,7 @@
   const thumbs = [];
   function thumb(i) {
     if (thumbs[i]) return thumbs[i];
-    const c = document.createElement('canvas'); c.width = SEL.w; c.height = SEL.h - 40;
+    const c = document.createElement('canvas'); c.width = SEL.w; c.height = SEL.h - 28;
     const g = c.getContext('2d'), sx = c.width / (WALL_R - WALL_L), sy = c.height / (760 - FIELD_TOP);
     g.fillStyle = 'rgba(2,2,10,.85)'; g.fillRect(0, 0, c.width, c.height);
     for (const b of LEVELS[i].bricks) {
@@ -678,7 +678,7 @@
       ctx.drawImage(thumb(i), x, y);
       ctx.strokeStyle = on ? '#ffd84a' : 'rgba(200,195,255,.45)'; ctx.lineWidth = on ? 6 : 2;
       ctx.strokeRect(x, y, SEL.w, SEL.h);
-      outlinedText('Stage ' + lv.stage, x + 10, y + SEL.h - 18, 24, on ? '#ffd84a' : '#f4ecb0');
+      outlinedText('Stage ' + lv.stage, x + 8, y + SEL.h - 8, 19, on ? '#ffd84a' : '#f4ecb0');
       ctx.globalAlpha = 1;
     });
     ctx.font = '600 20px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#c9c3f2';
