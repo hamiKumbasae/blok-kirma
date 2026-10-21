@@ -105,7 +105,7 @@
   const MENU = ['New Game', 'Continue', 'Stage Select', 'Exit'];
   // Stage Select bu yeniden yapıma eklendi; orijinal menüde yok.
   const MENU_Y0 = 520, MENU_DY = 100;
-  const SEL = { cols: 6, x0: 39, y0: 110, w: 186, h: 160, gx: 14, gy: 12 };
+  const SEL = { cols: 8, x0: 32, y0: 105, w: 140, h: 124, gx: 10, gy: 14 };
   const S = {
     speedMul: 1, creatures: [], spawnT: 0, introT: 99, fireT: 0,
     selIndex: 0, selLimit: 0, selFrom: 'menu',
@@ -132,8 +132,10 @@
         required: !metal || RULES.metalBreakable,
         mover: !!b.move && b.move !== 'tower',
         tower: b.move === 'tower' ? { side: b.side, dc: b.dc } : null,
-        vx: b.move ? (Math.round(b.c * 10) % 2 ? -1 : 1) * RULES.moverSpeed : 0,
+        // dir / speed / amp (hücre): Stage 23+ için bölüme özel hareket.
+        vx: b.move ? (b.dir ?? (Math.round(b.c * 10) % 2 ? -1 : 1)) * (b.speed ?? RULES.moverSpeed) : 0,
         vy: b.move === true ? (b.r % 2 ? -0.5 : 0.5) * RULES.moverSpeed : 0,
+        amp: b.amp ? b.amp * GRID.cw : 0, homeX: cellRect(cells[0][0], cells[0][1]).x,
       };
     });
   }
@@ -284,8 +286,11 @@
 
   // Hareketli tuğlalar (Stage 6, videom_parca_02): diğer tuğlalara, duvarlara
   // çarpıp yön değiştirerek dolaşır; halka kırılınca alana yayılır.
-  function overlapsAny(br, rect) {
-    if (rect.x < WALL_L || rect.x + rect.w > WALL_R || rect.y < FIELD_TOP + 8 || rect.y + rect.h > 720) return true;
+  // axis: 'x' yalnız yan duvarlara, 'y' yalnız üst/alt sınıra bakar (alt sıradaki
+  // yatay kayanlar alt sınırın altında kalabilir — Stage 23).
+  function overlapsAny(br, rect, axis) {
+    if (axis !== 'y' && (rect.x < WALL_L || rect.x + rect.w > WALL_R)) return true;
+    if (axis !== 'x' && (rect.y < FIELD_TOP + 8 || rect.y + rect.h > 720)) return true;
     for (const o of S.bricks) {
       if (o === br || !o.alive) continue;
       for (const r of o.rects) if (rect.x < r.x + r.w && rect.x + rect.w > r.x && rect.y < r.y + r.h && rect.y + rect.h > r.y) return true;
@@ -310,11 +315,14 @@
     moveTowers();
     for (const br of S.bricks) {
       if (!br.alive || !br.mover) continue;
-      const r = br.rects[0];
-      const nx = { ...r, x: r.x + br.vx * dt };
-      if (overlapsAny(br, nx)) br.vx = -br.vx; else r.x = nx.x;
-      const ny = { ...r, y: r.y + br.vy * dt };
-      if (overlapsAny(br, ny)) br.vy = -br.vy; else r.y = ny.y;
+      // Çok hücreli (2×1, L) parçalar tek gövde olarak kayar.
+      const dx = br.vx * dt, dy = br.vy * dt;
+      const nx = br.rects.map((r) => ({ ...r, x: r.x + dx }));
+      const outX = br.amp && Math.abs(nx[0].x - br.homeX) > br.amp && Math.sign(nx[0].x - br.homeX) === Math.sign(dx);
+      if (outX || nx.some((r) => overlapsAny(br, r, 'x'))) br.vx = -br.vx; else br.rects.forEach((r, i) => { r.x = nx[i].x; });
+      if (!dy) continue;
+      const ny = br.rects.map((r) => ({ ...r, y: r.y + dy }));
+      if (ny.some((r) => overlapsAny(br, r, 'y'))) br.vy = -br.vy; else br.rects.forEach((r, i) => { r.y = ny[i].y; });
     }
   }
 
@@ -448,7 +456,7 @@
         ctx.strokeStyle = br.t === 'metal' ? 'rgba(255,255,240,.45)' : 'rgba(255,255,255,.38)';
         ctx.lineWidth = 9;
         for (let k = -2; k < 4; k++) {
-          const sx = GRID.x0 + (c + k * 0.55) * GRID.cw;
+          const sx = rc.x + k * 0.55 * GRID.cw;
           ctx.beginPath(); ctx.moveTo(sx, rc.y + rc.h); ctx.lineTo(sx + rc.h * 0.7, rc.y); ctx.stroke();
         }
         ctx.restore();
@@ -788,12 +796,12 @@
     while (acc >= STEP) { update(STEP); acc -= STEP; }
     draw();
     requestAnimationFrame(frame);
+  }
 
   // #stage5 gibi bir bağlantı doğrudan o bölümü açar; #stages seçim ekranını.
   const hashStage = /^#stage(\d+)$/.exec(location.hash);
   if (hashStage) { const i = LEVELS.findIndex((l) => l.stage === +hashStage[1]); if (i >= 0) startStage(i); }
   else if (location.hash === '#stages') { S.mode = 'select'; S.selLimit = LEVELS.length - 1; }
-  }
   requestAnimationFrame(frame);
 
   // Tarayıcı testleri için.

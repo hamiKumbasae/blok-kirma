@@ -78,7 +78,7 @@ Topfield'in eski TAP SDK örnek arşivleri araştırıldı; ExBlock kaynak kodu 
 - Testler: `node tests/levels.test.js`. Tarayıcıda menü, 4 harita ve kısa oynanış hatasız çalıştı.
 - **YouTube bu ortamdan açılamıyor (bot doğrulaması).** Yeni haritalar için kullanıcıdan "Stage N" kareleri alınmalı. Ayrıntı ve çözülmemiş farklar için ORIGINAL-ANALYSIS.md.
 
-- Oyunda Stage 1–21 var. Continue orijinaldeki gibi ulaşılan bölümler arasında seçim ekranı açar (0 puan, 5 can).
+- Oyunda Stage 1–31 var. Stage 22–31 `yeni_parca_01…25` videolarından ölçüldü (kareler `reference-frames/parca-stage-NN.jpg`); 23, 27, 28, 29 ve 31'deki kayan blokların hızı yaklaşık. Continue orijinaldeki gibi ulaşılan bölümler arasında seçim ekranı açar (0 puan, 5 can).
 - Menüde **Stage Select** var (orijinalde yok): tüm bölümler küçük resimleriyle listelenir, tıklanan bölüm 5 canla başlar. `index.html#stage7` bağlantısı doğrudan o bölümü, `#stages` seçim ekranını açar.
 
 ## Devam edecek Codex için işler

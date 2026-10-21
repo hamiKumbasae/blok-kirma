@@ -328,6 +328,143 @@
     ...row('purple-s', [3, 5, 7, 9, 11, 13], 6), ...row('purple-s', [5, 7, 9, 11], 7), ...row('purple-s', [7, 9], 8),
   ];
 
+  // Stage 22–31 — yeni_parca_02…23 videoları; her bölümün "Stage N" yazısı
+  // kaybolduğu andaki kare ızgarayla ölçüldü (reference-frames/parca-stage-NN.jpg).
+  // Hareketli bloklarda `speed` (px/s), `dir` (+1 sağa) ve `amp` (hücre, salınım
+  // genliği) videodaki hızdan yaklaşık olarak alındı.
+  const mv = (b, dir, speed, amp) => ({ ...b, move: 'h', dir, speed, ...(amp ? { amp } : {}) });
+  const shiftC = (b, dc) => (b.cells ? { ...b, cells: b.cells.map(([c, r]) => [c + dc, r]) } : { ...b, c: b.c + dc });
+  const mirrorC = (b) => (b.cells ? { ...b, cells: b.cells.map(([c, r]) => [17 - c, r]) } : { ...b, c: 18 - b.c - b.w });
+
+  // Stage 22 — metal çerçeve içinde dikey kırmızılar; kenarlarda dört mavi sıra.
+  const stage22 = [
+    R('purple-s', 8, 1),
+    L('red', [[4, 2], [5, 2], [4, 3]]), L('metal', [[6, 2], [5, 3], [6, 3]]), R('purple-s', 7, 2), R('purple-s', 9, 2),
+    L('metal', [[11, 2], [11, 3], [12, 3]]), L('red', [[12, 2], [13, 2], [13, 3]]),
+    ...[3, 4, 5, 6].flatMap((r) => [R('blue', 0, r), R('blue', 16, r)]),
+    L('metal', [[2, 3], [3, 3], [2, 4]]), R('metal', 7, 3), R('metal', 9, 3), L('metal', [[14, 3], [15, 3], [15, 4]]),
+    ...[3, 4, 6, 7, 10, 11, 13, 14].map((c) => V('red', c, 4)), V('purple-s', 5, 4), V('purple-s', 12, 4), R('purple-s', 8, 4),
+    R('metal', 8, 5), L('metal', [[2, 5], [2, 6], [3, 6]]), L('metal', [[15, 5], [15, 6], [14, 6]]),
+    ...row('metal', [4, 6, 8, 10, 12], 6),
+  ];
+
+  // Stage 23 — asimetrik; alttaki iki metal blok yatayda kayıyor (duvardan sekiyor).
+  const stage23 = [
+    R('violet-s', 8, 0, 1), R('violet-s', 8, 1, 1), V('violet-s', 7, 1), V('violet-s', 9, 1), V('green', 8, 2),
+    R('red-s', 1, 1), R('red-s', 13, 1), R('red-s', 3, 3), R('red-s', 14, 3), V('red-s', 12, 3), R('red-s', 0, 4, 1), R('red-s', 16, 5, 1),
+    ...[6, 7, 9, 10].map((c) => R('violet-s', c, 3, 1)), V('violet-s', 6, 4), V('violet-s', 10, 4), R('violet-s', 6, 6, 1), R('violet-s', 10, 6, 1),
+    ...[[7, 4], [9, 4], [5, 6], [11, 6], [6, 7], [10, 7]].map(([c, r]) => R('metal', c, r, 1)),
+    V('purple', 2, 5), V('purple', 14, 5), ...[1, 3, 13, 15, 17].map((c) => V('purple', c, 7)), ...[0, 4, 12, 16].map((c) => R('purple', c, 9, 1)),
+    V('violet-s', 5, 7), V('violet-s', 11, 7), R('green', 7, 7), R('green', 9, 7, 1),
+    ...[0, 2, 4, 8, 12, 14, 16].map((c) => R('yellow', c, 8, 1)), R('yellow', 6, 8), R('yellow', 9, 8),
+    mv(R('metal', 0.3, 10), -1, 23), mv(R('metal', 15, 10), -1, 23),
+  ];
+
+  // Stage 24 — iki mavi sarmal, kırmızı çerçeve; ortada metal ve çizgili yeşil.
+  const stage24 = [
+    ...[5, 6, 11, 12].map((c) => R('purple-s', c, 0, 1)), R('purple-s', 7, 1, 1), R('purple-s', 10, 1, 1),
+    ...[2, 15].flatMap((c) => [V('red', c, 1), R('red', c, 3, 1), V('red', c, 4), V('red', c, 6)]),
+    R('red', 3, 1), R('red', 13, 1), R('red', 3, 7), R('red', 13, 7),
+    ...[[5, 2], [5, 6], [6, 3], [6, 5], [12, 2], [12, 6], [11, 3], [11, 5]].map(([c, r]) => R('red', c, r, 1)),
+    R('blue', 3, 2), L('blue', [[3, 3], [3, 4], [4, 4]]), R('blue', 4, 3), L('blue', [[5, 4], [4, 5], [5, 5]]), L('blue', [[3, 5], [3, 6], [4, 6]]),
+    R('blue', 13, 2), L('blue', [[14, 3], [14, 4], [13, 4]]), R('blue', 12, 3), L('blue', [[12, 4], [13, 5], [12, 5]]), L('blue', [[14, 5], [14, 6], [13, 6]]),
+    R('metal', 8, 2), R('metal', 6, 4), R('metal', 8, 4), R('metal', 10, 4), R('metal', 8, 6),
+    R('green-s', 7, 3), R('green-s', 9, 3), R('green-s', 7, 5), R('green-s', 9, 5),
+    R('yellow', 3, 8, 1), R('yellow', 2, 9, 1), R('yellow', 14, 8, 1), R('yellow', 15, 9, 1),
+  ];
+
+  // Stage 25 — çizgili kırmızı ve lila dağınık kümeler.
+  const stage25 = [
+    R('purple-s', 12, 1), R('purple-s', 14, 1),
+    ...[2, 4, 8, 9, 12, 15].map((c) => R('red-s', c, 2, 1)), R('purple-s', 11, 2, 1), R('purple-s', 13, 2),
+    ...[3, 7, 8].map((c) => R('red-s', c, 3, 1)), R('purple-s', 9, 3, 1), R('purple-s', 10, 3, 1), R('purple-s', 12, 3), R('purple-s', 14, 3),
+    R('purple-s', 2, 4), R('purple-s', 4, 4), R('purple-s', 7, 4, 1), R('purple-s', 8, 4, 1), ...[9, 10, 14].map((c) => R('red-s', c, 4, 1)),
+    ...[2, 5, 8, 9, 13, 15].map((c) => R('red-s', c, 5, 1)), R('purple-s', 3, 5), R('purple-s', 6, 5, 1),
+    R('purple-s', 2, 6), R('purple-s', 4, 6),
+  ];
+
+  // Stage 26 — "KCS" harfleri (lila, sarı, yeşil; hepsi çizgili).
+  const stage26 = [
+    R('purple-s', 2, 2, 1), V('purple-s', 2, 3), V('purple-s', 2, 5), V('purple-s', 2, 7), V('purple-s', 5, 2), V('purple-s', 5, 7),
+    R('purple-s', 4, 4, 1), R('purple-s', 3, 5, 1), R('purple-s', 4, 6, 1),
+    R('yellow-s', 8, 2), R('yellow-s', 10, 2, 1), R('yellow-s', 8, 3, 1), V('yellow-s', 7, 3), R('yellow-s', 7, 5, 1), V('yellow-s', 7, 6),
+    R('yellow-s', 8, 7, 1), R('yellow-s', 8, 8), R('yellow-s', 10, 8, 1),
+    R('green-s', 13, 2), R('green-s', 15, 2, 1), V('green-s', 12, 3), R('green-s', 13, 5), V('green-s', 15, 6), R('green-s', 12, 8, 1), R('green-s', 13, 8),
+  ];
+
+  // Stage 27 — kare sıralar; sarı sıra sağa kayıp birbirinden sekiyor, metal
+  // kareler çiftler halinde küçük salınım yapıyor (hareket yaklaşık).
+  const gap27 = [0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17];
+  const stage27 = [
+    ...[0, 2, 4, 6, 8, 10, 12, 14, 16].map((c) => R('violet-s', c, 1, 1)),
+    ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => mv(R('yellow', 1.4 + 2 * k, 2, 1), 1, 16)),
+    ...[[0.25, 1], [1.7, -1], [3.25, 1], [4.7, -1], [6.2, 1], [7.65, -1], [9.15, 1], [10.6, -1]].map(([c, d]) => mv(R('metal', c, 3, 1), d, 16, 0.2)),
+    mv(R('metal', 12.4, 3, 1), -1, 16, 0.35),
+    ...gap27.map((c) => R('blue', c, 5, 1)), ...gap27.map((c) => R('red-s', c, 6, 1)),
+    ...Array.from({ length: 18 }, (_, c) => R(c === 16 ? 'violet-s' : c % 2 ? 'yellow' : 'purple-s', c, 8, 1)),
+    ...Array.from({ length: 18 }, (_, c) => R('green', c, 9, 1)),
+  ];
+
+  // Stage 28 — mor kareler V çiziyor; her sırada metal bloklar kareler arasında kayıyor.
+  const stage28 = [
+    ...[[4, 1], [13, 1], [0, 2], [5, 2], [12, 2], [17, 2], [1, 3], [6, 3], [11, 3], [16, 3], [2, 4], [7, 4], [10, 4], [15, 4],
+      [3, 5], [8, 5], [9, 5], [14, 5], [4, 6], [13, 6], [5, 7], [12, 7], [6, 8], [11, 8], [7, 9], [10, 9], [8, 10], [9, 10]]
+      .map(([c, r]) => R('violet-s', c, r, 1)),
+    ...[[1.8, 1, -1], [14.45, 1, 1], [2.6, 2, -1], [13.4, 2, 1], [3.65, 3, -1], [12.35, 3, 1], [4.7, 4, -1], [11.3, 4, 1],
+      [5.75, 5, -1], [10.25, 5, 1], [6.8, 6, -1], [9.05, 6, 1], [6.25, 7, 1], [9.85, 7, -1]].map(([c, r, d]) => mv(R('metal', c, r), d, 25)),
+    R('green-s', 8, 8),
+  ];
+
+  // Stage 29 — iki metal çerçeveli kare; ortada iki lila kare kayıyor.
+  const half29 = [
+    L('metal', [[0, 0], [1, 0], [0, 1]]), R('metal', 2, 0), R('metal', 4, 0), L('metal', [[6, 0], [7, 0], [7, 1]]),
+    V('metal', 0, 2), V('metal', 0, 4), V('metal', 7, 4),
+    L('metal', [[0, 6], [0, 7], [1, 7]]), R('metal', 2, 7), R('metal', 4, 7), L('metal', [[7, 6], [6, 7], [7, 7]]),
+  ];
+  const inner29 = [
+    L('blue', [[1, 1], [2, 1], [1, 2]]), R('blue', 3, 1), L('blue', [[5, 1], [6, 1], [6, 2]]), V('blue', 1, 3), V('blue', 6, 3),
+    L('blue', [[1, 5], [1, 6], [2, 6]]), R('blue', 3, 6), L('blue', [[6, 5], [5, 6], [6, 6]]),
+    L('green', [[2, 2], [3, 2], [2, 3]]), L('green', [[4, 2], [5, 2], [5, 3]]), L('green', [[2, 4], [2, 5], [3, 5]]), L('green', [[5, 4], [4, 5], [5, 5]]),
+    R('purple', 4, 3, 1), R('purple', 4, 4, 1),
+  ];
+  const stage29 = [
+    ...half29, ...half29.map(mirrorC), ...inner29, ...inner29.map((b) => shiftC(b, 10)),
+    mv(R('purple', 8.75, 0, 1), -1, 20), mv(R('purple', 8.3, 1, 1), 1, 20),
+    R('green', 9, 4, 1), R('yellow', 8, 5, 1), R('blue', 9, 6, 1), R('red', 8, 7, 1),
+  ];
+
+  // Stage 30 — kırmızı ve sarı dalgalar; dört metal kare.
+  const stage30 = [
+    R('red-s', 4, 0), R('yellow', 8, 0),
+    ...[3, 6, 17].map((c) => R('red-s', c, 1, 1)), R('yellow', 7, 1, 1), R('yellow', 10, 1, 1),
+    V('red-s', 2, 2), V('red-s', 7, 2), V('red-s', 16, 2), V('yellow', 6, 2), V('yellow', 11, 2),
+    ...[1, 8, 15].map((c) => R('red-s', c, 3, 1)), R('yellow', 5, 3, 1), R('yellow', 12, 3, 1),
+    V('red-s', 1, 4), V('red-s', 8, 4), V('red-s', 15, 4), ...[2, 7, 16].map((c) => R('red-s', c, 4, 1)),
+    V('yellow', 5, 4), V('yellow', 12, 4), R('yellow', 6, 4, 1), R('yellow', 11, 4, 1),
+    ...[0, 9, 14].map((c) => R('red-s', c, 5, 1)), R('yellow-s', 4, 5, 1), R('yellow-s', 13, 5, 1),
+    ...[1, 8, 15].map((c) => R('red-s', c, 6, 1)), V('red', 0, 6), V('red', 9, 6), V('red', 14, 6),
+    V('yellow-s', 4, 6), V('yellow-s', 13, 6), R('yellow-s', 5, 6, 1), R('yellow-s', 12, 6, 1),
+    ...[3, 5, 8, 10].map((c) => R('metal', c, 7, 1)),
+    ...[0, 3, 14, 17].map((c) => R('yellow-s', c, 8, 1)), R('red', 10, 8, 1), R('red', 13, 8, 1),
+    R('yellow-s', 1, 9), R('red', 11, 9), R('yellow-s', 15, 9),
+  ];
+
+  // Stage 31 — kırmızı direk ve yeşil kanatlar; iki metal L ortaya doğru kayıp sekiyor.
+  const stage31 = [
+    R('metal', 7, 1, 1), R('purple-s', 8, 1), R('metal', 10, 1, 1),
+    R('purple-s', 7, 2, 1), R('purple-s', 8, 2), R('purple-s', 10, 2, 1), R('metal', 8, 3),
+    R('green-s', 1, 4), R('green-s', 3, 4, 1), R('green-s', 4, 4), R('green-s', 6, 4),
+    R('green-s', 10, 4), R('green-s', 12, 4), R('green-s', 14, 4, 1), R('green-s', 15, 4),
+    R('green-s', 1, 5, 1), R('metal', 2, 5, 1), R('green-s', 3, 5), R('green-s', 5, 5), R('green-s', 7, 5, 1),
+    R('green-s', 10, 5, 1), R('green-s', 11, 5), R('green-s', 13, 5), R('metal', 15, 5, 1), R('green-s', 16, 5, 1),
+    R('green-s', 2, 6, 1), R('green-s', 15, 6, 1),
+    V('red', 8, 4), V('red', 8, 6), V('red', 8, 8), R('red', 8, 10, 1), R('red', 9, 4, 1), V('metal', 9, 5), V('red', 9, 7), V('red', 9, 9),
+    mv(L('metal', [[0.85, 7], [1.85, 7], [0.85, 8]]), 1, 25), mv(L('metal', [[15.15, 7], [16.15, 7], [16.15, 8]]), -1, 25),
+    R('yellow-s', 4, 7), R('metal', 6, 7), R('metal', 10, 7), R('yellow-s', 12, 7),
+    R('yellow-s', 5, 8), R('yellow-s', 7, 8, 1), R('yellow-s', 10, 8, 1), R('yellow-s', 11, 8),
+    R('metal', 7, 10, 1), R('metal', 10, 10, 1),
+  ];
+
   root.EXBLOCK_LEVELS = [
     { id: 'stage-1', stage: 1, name: 'Kademeler', source: 'reference-frames/user-stage-01b.jpg', confidence: 'yüksek', bricks: down(stage1) },
     { id: 'stage-2', stage: 2, name: 'Üç bant', source: 'reference-frames/user-stage-02.jpg + 0035.jpg', confidence: 'yüksek (renkler 0035.jpg)', bricks: down(stage2) },
@@ -350,6 +487,16 @@
     { id: 'stage-19', stage: 19, name: 'Tek sıralar', source: 'reference-frames/kayit-stage-19-start.jpg', confidence: 'yüksek', bricks: stage19 },
     { id: 'stage-20', stage: 20, name: 'Kanatlar', source: 'reference-frames/user-stage-20.jpg', confidence: 'yüksek', bricks: stage20 },
     { id: 'stage-21', stage: 21, name: 'Elmas ve kuşak', source: 'reference-frames/kayit-stage-21-start.jpg', confidence: 'yüksek', bricks: stage21 },
+    { id: 'stage-22', stage: 22, name: 'Metal kale', source: 'reference-frames/parca-stage-22.jpg', confidence: 'yüksek', bricks: stage22 },
+    { id: 'stage-23', stage: 23, name: 'Mor kule', source: 'reference-frames/parca-stage-23.jpg', confidence: 'yüksek (alt metal hızı yaklaşık)', bricks: stage23 },
+    { id: 'stage-24', stage: 24, name: 'Mavi sarmallar', source: 'reference-frames/parca-stage-24.jpg', confidence: 'yüksek', bricks: stage24 },
+    { id: 'stage-25', stage: 25, name: 'Dağınık kümeler', source: 'reference-frames/parca-stage-25.jpg', confidence: 'yüksek', bricks: stage25 },
+    { id: 'stage-26', stage: 26, name: 'KCS', source: 'reference-frames/parca-stage-26.jpg', confidence: 'yüksek', bricks: stage26 },
+    { id: 'stage-27', stage: 27, name: 'Kayan sıralar', source: 'reference-frames/parca-stage-27.jpg', confidence: 'orta (hareket yaklaşık)', bricks: stage27 },
+    { id: 'stage-28', stage: 28, name: 'Mor V', source: 'reference-frames/parca-stage-28.jpg', confidence: 'yüksek (hız yaklaşık)', bricks: stage28 },
+    { id: 'stage-29', stage: 29, name: 'İki çerçeve', source: 'reference-frames/parca-stage-29.jpg', confidence: 'yüksek', bricks: stage29 },
+    { id: 'stage-30', stage: 30, name: 'Dalgalar', source: 'reference-frames/parca-stage-30.jpg', confidence: 'yüksek', bricks: stage30 },
+    { id: 'stage-31', stage: 31, name: 'Direk ve kanatlar', source: 'reference-frames/parca-stage-31.jpg', confidence: 'yüksek (L hızı yaklaşık)', bricks: stage31 },
   ];
   // Sırası bilinmeyen haritalar: oyunda kullanılmaz, Stage karesi gelince
   // doğru yere taşınır.
