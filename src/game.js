@@ -557,14 +557,14 @@
   // Eşleşmeler: altın çekirdek = lazer (kayıtta doğrulandı), yeşil çubuk = ekstra can
   // (X6→X7 görüldü), üç gümüş top = üçlü top; mavi / mor / turuncu çekirdeklerin
   // etkisi kesin değil (yavaşlatma / geniş çubuk / hızlandırma varsayım).
-  const BUB_R = 37;  // orijinalde baloncuk ~75 px çaplı
+  const BUB_R = 40;  // orijinalde baloncuk ~80 px çaplı
   function drawBubble(bn) {
     const x = bn.x, y = bn.y, R = BUB_R;
     const g = ctx.createRadialGradient(x - 6, y - 8, 4, x, y, R);
-    g.addColorStop(0, 'rgba(40,50,90,.35)'); g.addColorStop(0.75, 'rgba(12,16,40,.55)'); g.addColorStop(1, 'rgba(70,80,120,.55)');
+    g.addColorStop(0, 'rgba(10,14,30,.45)'); g.addColorStop(0.8, 'rgba(6,8,20,.6)'); g.addColorStop(1, 'rgba(60,70,100,.5)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fill();
     // çekirdek (30 px'lik tasarım, baloncuğa göre büyütülür)
-    ctx.save(); ctx.translate(x, y); ctx.scale(R / 22, R / 22); ctx.translate(-x, -y);
+    ctx.save(); ctx.translate(x, y); ctx.scale(R / 20, R / 20); ctx.filter = 'blur(1.2px)'; ctx.translate(-x, -y);
     const k = bn.kind, cy = y + 4;
     const ball = (bx, by, r, c1, c2) => {
       const gg = ctx.createRadialGradient(bx - r * 0.35, by - r * 0.35, 1, bx, by, r);
@@ -574,26 +574,27 @@
       const gg = ctx.createLinearGradient(bx - w / 2, 0, bx + w / 2, 0); gg.addColorStop(0, c1); gg.addColorStop(1, c2);
       ctx.fillStyle = gg; ctx.beginPath(); ctx.roundRect(bx - w / 2, by - h / 2, w, h, w / 2); ctx.fill();
     };
-    if (k === 'laser') { ball(x - 5, cy + 2, 9, '#ffe680', '#c8901a'); ball(x + 6, cy + 3, 8, '#ffd860', '#b07812'); }
-    else if (k === 'triple') { ball(x - 8, cy + 3, 7, '#ffffff', '#8c94a8'); ball(x + 8, cy + 3, 7, '#ffffff', '#8c94a8'); ball(x, cy - 9, 7, '#ffffff', '#8c94a8'); }
+    const blob = (bx, by, w, h, c1, c2) => { const gg = ctx.createRadialGradient(bx - w * 0.2, by - h * 0.25, 1, bx, by, w * 0.7); gg.addColorStop(0, c1); gg.addColorStop(1, c2); ctx.fillStyle = gg; ctx.beginPath(); ctx.roundRect(bx - w / 2, by - h / 2, w, h, Math.min(w, h) * 0.38); ctx.fill(); };
+    if (k === 'laser') { blob(x, cy + 2, 18, 14, '#ffe060', '#b07a10'); ctx.fillStyle = 'rgba(255,240,150,.7)'; ctx.fillRect(x - 6, cy - 1, 3, 5); ctx.fillRect(x + 2, cy - 1, 3, 5); }
+    else if (k === 'triple') { ball(x - 7, cy - 6, 7, '#ffffff', '#9aa0b0'); ball(x + 7, cy - 3, 6.5, '#f4f6fa', '#8c94a8'); ball(x - 2, cy + 7, 7, '#ffffff', '#9aa0b0'); }
     else if (k === 'life') {
       const gg = ctx.createLinearGradient(0, cy - 5, 0, cy + 5); gg.addColorStop(0, '#b8ff8a'); gg.addColorStop(0.5, '#4fbf3a'); gg.addColorStop(1, '#1d6a17');
-      ctx.fillStyle = gg; ctx.fillRect(x - 17, cy - 5, 34, 10);
-      ctx.fillStyle = '#e0a020'; ctx.fillRect(x - 20, cy - 6, 4, 12); ctx.fillRect(x + 16, cy - 6, 4, 12);
+      ctx.fillStyle = gg; ctx.fillRect(x - 13, cy - 4, 26, 8);
+      ctx.fillStyle = '#d8a030'; ctx.fillRect(x - 15, cy - 5, 3, 10); ctx.fillRect(x + 12, cy - 5, 3, 10);
     }
-    else if (k === 'slow') { capsule(x - 5, cy, 9, 20, '#5a9af0', '#1f4fa8'); capsule(x + 6, cy, 9, 20, '#4a8ae0', '#1a429a'); }
-    else if (k === 'wide') { capsule(x - 5, cy, 9, 20, '#a890f0', '#4a2fa0'); capsule(x + 6, cy, 9, 20, '#9a80e8', '#40289a'); }
-    else if (k === 'fast') ball(x + 1, cy + 2, 10, '#ffb060', '#d0500a');
+    else if (k === 'slow') { capsule(x - 4, cy - 1, 8, 18, '#4f8fe8', '#1c4aa0'); capsule(x + 4, cy - 1, 8, 18, '#3f7fd8', '#163f92'); }
+    else if (k === 'wide') { for (const dx of [-6, 0, 6]) capsule(x + dx, cy, 5.5, 18, '#9a86e6', '#3e2a92'); }
+    else if (k === 'fast') blob(x + 1, cy + 1, 15, 15, '#ffb050', '#c84a08');
     else ball(x, cy + 2, 8, '#3a4470', '#121830'); // yalnız puan
-    ctx.restore();
+    ctx.filter = 'none'; ctx.restore();
     // kenar, mavi yansıma, parlama
-    ctx.strokeStyle = 'rgba(185,195,215,.85)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, R - 1, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = 'rgba(70,120,230,.9)'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.arc(x, y, R - 7, Math.PI * 0.12, Math.PI * 0.55); ctx.stroke(); ctx.lineCap = 'butt';
-    const hx = x - R * 0.43, hy = y - R * 0.47, hr = R * 0.37;
+    ctx.strokeStyle = 'rgba(150,160,185,.7)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, R - 1.5, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(90,125,215,.9)'; ctx.lineWidth = R * 0.26; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(x, y, R * 0.84, Math.PI * 0.12, Math.PI * 0.3); ctx.stroke(); ctx.lineCap = 'butt';
+    const hx = x - R * 0.5, hy = y - R * 0.5, hr = R * 0.36;
     const hg = ctx.createRadialGradient(hx, hy, 1, hx, hy, hr);
-    hg.addColorStop(0, 'rgba(255,255,255,.95)'); hg.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(hx, hy, hr, hr * 0.72, -0.7, 0, Math.PI * 2); ctx.fill();
+    hg.addColorStop(0, 'rgba(255,255,255,.95)'); hg.addColorStop(0.55, 'rgba(235,240,255,.75)'); hg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(hx, hy, hr, hr * 0.48, -0.8, 0, Math.PI * 2); ctx.fill();
   }
 
   function drawCreature(c) {
