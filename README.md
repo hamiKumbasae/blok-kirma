@@ -4,6 +4,8 @@
 
 **▶ Oyna:** https://hamikumbasae.github.io/blok-kirma/
 
+**📺 Android TV:** https://hamikumbasae.github.io/blok-kirma/tv.apk — TV'de *Downloader* uygulamasına bu adresi yazıp kur. Kumanda: oklar hareket, OK topu at/seç, Geri menü/çıkış, ⏯ veya kırmızı duraklat, sarı veya ⏩ hız. Kaynak: `android/` (her push'ta otomatik derlenir).
+
 Bağlantı, depo ayarlarında GitHub Pages açıkken çalışır (Settings → Pages → Source: GitHub Actions; gizli depoda ücretli plan gerekir).
 
 Amaç: Çocuklukta televizyon/uydu alıcısında kumandayla oynanan **ExBlock** oyununu ayrı bir proje olarak, önce orijinaline mümkün olduğunca sadık biçimde yeniden yapmak. Kullanıcı mevcut `tugla-kirma` oyununa eklenmesini istemedi.
