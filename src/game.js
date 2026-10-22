@@ -449,7 +449,7 @@
       const left = !br.set.has(c - 1 + ',' + r), right = !br.set.has(c + 1 + ',' + r);
       const x = rc.x + (left ? 2 : 0), y = rc.y + (top ? 2 : 0);
       const w = rc.w - (left ? 2 : 0) - (right ? 2 : 0), h = rc.h - (top ? 2 : 0) - (bottom ? 2 : 0);
-      ctx.fillStyle = br.flash > 0 ? '#e0402a' : base;
+      ctx.fillStyle = br.flash > 0 ? shade(base, 0.3) : base; // vuruşta kısa parlama (renk değişmez)
       ctx.fillRect(x, y, w, h);
       if (striped) {
         ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
