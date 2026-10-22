@@ -330,19 +330,39 @@
 
   // Ateş topu (kullanıcının hatırladığı + videodaki turuncu top): kırılabilen
   // tuğlaların içinden geçip hepsini tek seferde kırar; metalden seker.
-  function collideBall(b, px, py) {
+  // Top–tuğla çarpışması: en derin temas eden hücreden topu dışarı it, yalnız
+  // tuğlaya doğru giden hız bileşenini çevir (duvar gibi). Böylece top metalin
+  // içinde kalıp titremez, yavaşlamaz; kayan metaller de topu dışarı iter.
+  function collideBall(b) {
     const R = b.r || BALL_R;
-    for (const br of S.bricks) {
-      if (!br.alive) continue;
-      for (const r of br.rects) {
-        const nx = Math.max(r.x, Math.min(b.x, r.x + r.w)), ny = Math.max(r.y, Math.min(b.y, r.y + r.h));
-        if ((b.x - nx) ** 2 + (b.y - ny) ** 2 > R * R) continue;
-        if (b.fire && Number.isFinite(br.hits)) { br.hits = 1; hitBrick(br); break; }
-        const fromSide = px + R <= r.x || px - R >= r.x + r.w;
-        if (fromSide) { b.vx = -b.vx; b.x = px; } else { b.vy = -b.vy; b.y = py; }
-        hitBrick(br);
-        return;
+    let hitOnce = false;
+    for (let pass = 0; pass < 3; pass++) {
+      let best = null;
+      for (const br of S.bricks) {
+        if (!br.alive) continue;
+        for (const r of br.rects) {
+          const cx = Math.max(r.x, Math.min(b.x, r.x + r.w)), cy = Math.max(r.y, Math.min(b.y, r.y + r.h));
+          let dx = b.x - cx, dy = b.y - cy, d = Math.hypot(dx, dy);
+          if (d >= R) continue;
+          if (d === 0) { // merkez içeride: en kısa çıkış yönü
+            const l = b.x - r.x, rr = r.x + r.w - b.x, t = b.y - r.y, bo = r.y + r.h - b.y, m = Math.min(l, rr, t, bo);
+            dx = m === l ? -1 : m === rr ? 1 : 0; dy = m === t ? -1 : m === bo ? 1 : 0; d = 0;
+          }
+          const pen = R - d;
+          if (!best || pen > best.pen) best = { br, dx, dy, d, pen };
+        }
       }
+      if (!best) return;
+      const { br } = best;
+      if (b.fire && Number.isFinite(br.hits)) { br.hits = 1; hitBrick(br); continue; }
+      const len = Math.hypot(best.dx, best.dy) || 1, nx = best.dx / len, ny = best.dy / len;
+      b.x += nx * (best.pen + 0.5); b.y += ny * (best.pen + 0.5);
+      // Köşe değilse baskın eksende yansı; köşede ikisini de çevir.
+      const ax = Math.abs(nx), ay = Math.abs(ny);
+      if (ax > ay * 1.5) { if (b.vx * nx < 0) b.vx = -b.vx; }
+      else if (ay > ax * 1.5) { if (b.vy * ny < 0) b.vy = -b.vy; }
+      else { if (b.vx * nx < 0) b.vx = -b.vx; if (b.vy * ny < 0) b.vy = -b.vy; }
+      if (!hitOnce) { hitBrick(br); hitOnce = true; }
     }
   }
 
@@ -361,7 +381,7 @@
       b.vx = Math.sin(off * RULES.maxBounce) * speed; b.vy = -Math.cos(off * RULES.maxBounce) * speed;
       return;
     }
-    collideBall(b, px, py);
+    collideBall(b);
     // Neredeyse yatay sonsuz döngüyü önle.
     const minVy = Math.hypot(b.vx, b.vy) * 0.45;
     if (Math.abs(b.vy) < minVy) { b.vy = b.vy < 0 ? -minVy : minVy; }
