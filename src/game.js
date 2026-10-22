@@ -51,8 +51,9 @@
   const BALL_R = 16;                           // gözlem: ~34 px çap
 
   const COLORS = {
-    red: '#d9542f', blue: '#4b86da', yellow: '#ecd23f', green: '#4dbd3a', purple: '#c48fe2',
-    'red-s': '#d83a2c', 'blue-s': '#7fb2f0', 'yellow-s': '#f2d22e', 'purple-s': '#a9a2d8', 'violet-s': '#b45ad6', 'green-s': '#6cbb3a', 'silver-s': '#c9cde0', metal: '#bcb99c',
+    // Orijinal karelerden ölçülen ortanca renkler (çizgililerde parlak şerit payı düşüldü).
+    red: '#c4371f', blue: '#3570c8', yellow: '#e3c001', green: '#00ae00', purple: '#a976cf',
+    'red-s': '#b5261b', 'blue-s': '#6a9ad8', 'yellow-s': '#9c9018', 'purple-s': '#7870ac', 'violet-s': '#a35ec9', 'green-s': '#5e8c19', 'silver-s': '#b9bccb', metal: '#a1a580',
   };
 
   const canvas = document.querySelector('canvas');
@@ -475,7 +476,7 @@
       ctx.fillRect(x, y, w, h);
       if (striped) {
         ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
-        ctx.strokeStyle = br.t === 'metal' ? 'rgba(255,255,240,.45)' : 'rgba(255,255,255,.38)';
+        ctx.strokeStyle = br.t === 'metal' ? 'rgba(255,255,235,.32)' : 'rgba(255,255,255,.28)';
         ctx.lineWidth = 9;
         for (let k = -2; k < 4; k++) {
           const sx = rc.x + k * 0.55 * GRID.cw;
