@@ -1,3 +1,6 @@
 .DS_Store
 unverified-captures/
 reference-frames/
+android/.gradle/
+android/app/build/
+android/build/

@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.hamikumbasae.blokyildizi'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.hamikumbasae.blokyildizi'
+        minSdk 21
+        targetSdk 34
+        versionCode (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+        versionName "1.0." + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    signingConfigs {
+        // Hobi projesi: güncellemelerin üstüne kurulabilmesi için sabit anahtar depoda.
+        sabit {
+            storeFile file('../blok.keystore')
+            storePassword 'blokyildizi'
+            keyAlias 'blok'
+            keyPassword 'blokyildizi'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.sabit
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // Oyun dosyaları tek kaynaktan: depo kökündeki index.html ve src/.
+    sourceSets {
+        main.assets.srcDirs += ["$buildDir/oyun"]
+    }
+}
+
+tasks.register('oyunuKopyala', Copy) {
+    from('../..') { include 'index.html', 'src/**' }
+    into "$buildDir/oyun"
+}
+preBuild.dependsOn oyunuKopyala

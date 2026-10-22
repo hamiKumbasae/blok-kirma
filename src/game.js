@@ -177,7 +177,7 @@
     if (item === 'New Game') newGame();
     else if (item === 'Continue') continueGame();
     else if (item === 'Stage Select') { S.mode = 'select'; S.selFrom = 'menu'; S.selLimit = LEVELS.length - 1; }
-    else S.mode = 'exit';
+    else if (window.AndroidTV) window.AndroidTV.exit(); else S.mode = 'exit';
   }
 
   function launch() {
@@ -819,4 +819,18 @@
 
   // Tarayıcı testleri için.
   window.__exblock = { S, RULES, LEVELS, startLevel, newGame };
+
+  // ---------- TV modu (Android TV uygulaması / ?tv) ----------
+  // Uygulama kumandanın Geri, Oynat/Duraklat ve renkli tuşlarını buraya iletir.
+  const tvMode = /BlokTV/.test(navigator.userAgent) || new URLSearchParams(location.search).has('tv');
+  if (tvMode) document.body.classList.add('tv');
+  window.__tv = {
+    // Geri tuşu: oyundan menüye, menüden çıkış ('exit' döner → uygulama kapanır).
+    back() {
+      if (S.mode === 'menu') return 'exit';
+      S.mode = 'menu'; S.paused = false; return 'ok';
+    },
+    pause() { togglePause(); },
+    speed() { cycleSpeed(); },
+  };
 })();

@@ -1,10 +1,10 @@
-# Oyunu GitHub Pages'te yayınlar. Depo ayarlarında Settings → Pages →
-# Source: "GitHub Actions" seçili olmalı (gizli depoda ücretli plan gerekir).
+# Oyunu GitHub Pages'te yayınlar ve Android TV uygulamasını (tv.apk) derleyip
+# aynı siteye koyar: https://hamikumbasae.github.io/blok-kirma/tv.apk
 name: Pages
 
 on:
   push:
-    branches: [main, claude/charming-knuth-oj4ste]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -18,16 +18,26 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Android TV uygulamasını derle
+        run: gradle -p android assembleRelease --no-daemon
       - name: Siteyi hazırla
         run: |
           mkdir _site
           cp -r index.html src _site/
+          cp android/app/build/outputs/apk/release/app-release.apk _site/tv.apk
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
       - id: deployment
