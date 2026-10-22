@@ -76,6 +76,9 @@ public class MainActivity extends Activity {
             case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
                 if (down && e.getRepeatCount() == 0) js("window.__tv && window.__tv.speed()");
                 return true;
+            case KeyEvent.KEYCODE_PROG_GREEN:
+                if (down && e.getRepeatCount() == 0) js("window.__tv && window.__tv.lives()");
+                return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
                 // OK tuşunu oyunun beklediği Enter olarak gönder.

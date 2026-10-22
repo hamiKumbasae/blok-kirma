@@ -114,6 +114,8 @@
     timer: 0, paused: false,
   };
   const keys = new Set();
+  let infiniteLives = true;
+  try { if (localStorage.getItem('blok-sonsuz') === '0') infiniteLives = false; } catch { /* yok say */ }
 
   const cellRect = (c, r) => {
     const x = Math.round(GRID.x0 + c * GRID.cw), y = Math.round(GRID.y0 + r * GRID.ch);
@@ -415,6 +417,7 @@
     S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
 
     if (S.balls.length === 0) {
+      if (infiniteLives) { dockBall(); return; }
       if (S.lives === 0) { S.mode = 'gameover'; save.clear(); return; }
       S.lives--; dockBall();
       save.write({ levelIndex: S.levelIndex, score: S.score, lives: S.lives, max: Math.max(S.levelIndex, save.read()?.max ?? 0) });
@@ -609,7 +612,7 @@
     icon.addColorStop(0, '#b8ff8a'); icon.addColorStop(1, '#2a8a20');
     ctx.fillStyle = icon; ctx.beginPath(); ctx.roundRect(66, 22, 96, 16, 8); ctx.fill();
     ctx.fillStyle = '#ffcf3a'; ctx.fillRect(70, 20, 6, 20); ctx.fillRect(152, 20, 6, 20);
-    outlinedText('X ' + S.lives, 176, HUD_H / 2 + 2, 38, '#f4ecb0');
+    outlinedText('X ' + (infiniteLives ? '∞' : S.lives), 176, HUD_H / 2 + 2, 38, '#f4ecb0');
     outlinedText('SCORE', 692, HUD_H / 2 + 2, 38, '#f4ecb0');
     const digits = ctx.createLinearGradient(0, 12, 0, HUD_H - 8);
     digits.addColorStop(0, '#fff2a0'); digits.addColorStop(0.55, '#f2b52a'); digits.addColorStop(1, '#b86a12');
@@ -792,6 +795,16 @@
   const STEP = 1 / 240;
   let last = performance.now(), acc = 0;
   // Oyun hızı (orijinal TV kutusu oyunu yavaş; varsayılan 1.5×). Hız düğmesi / H tuşu değiştirir.
+  // Sonsuz can (varsayılan açık). Can düğmesi / L tuşu / kumandada yeşil tuş.
+  function toggleLives() {
+    infiniteLives = !infiniteLives; showLives();
+    try { localStorage.setItem('blok-sonsuz', infiniteLives ? '1' : '0'); } catch { /* yok say */ }
+  }
+  const livesBtn = document.getElementById('lives');
+  const showLives = () => { if (livesBtn) livesBtn.textContent = 'Can: ' + (infiniteLives ? 'sonsuz' : 'normal'); };
+  if (livesBtn) livesBtn.onclick = toggleLives;
+  window.addEventListener('keydown', (e) => { if (e.key === 'l' || e.key === 'L') toggleLives(); });
+  showLives();
   const SPEEDS = [1, 1.5, 2, 2.5];
   let gameSpeed = 1.5;
   try { const v = +localStorage.getItem('blok-hiz'); if (SPEEDS.includes(v)) gameSpeed = v; } catch { /* yok say */ }
@@ -832,5 +845,6 @@
     },
     pause() { togglePause(); },
     speed() { cycleSpeed(); },
+    lives() { toggleLives(); },
   };
 })();

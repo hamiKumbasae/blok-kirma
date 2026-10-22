@@ -4,7 +4,7 @@
 
 **▶ Oyna:** https://hamikumbasae.github.io/blok-kirma/
 
-**📺 Android TV:** https://hamikumbasae.github.io/blok-kirma/tv.apk — TV'de *Downloader* uygulamasına bu adresi yazıp kur. Kumanda: oklar hareket, OK topu at/seç, Geri menü/çıkış, ⏯ veya kırmızı duraklat, sarı veya ⏩ hız. Kaynak: `android/` (her push'ta otomatik derlenir).
+**📺 Android TV:** https://hamikumbasae.github.io/blok-kirma/tv.apk — TV'de *Downloader* uygulamasına bu adresi yazıp kur. Kumanda: oklar hareket, OK topu at/seç, Geri menü/çıkış, ⏯ veya kırmızı duraklat, sarı veya ⏩ hız, yeşil sonsuz can aç/kapa. Kaynak: `android/` (her push'ta otomatik derlenir).
 
 Bağlantı, depo ayarlarında GitHub Pages açıkken çalışır (Settings → Pages → Source: GitHub Actions; gizli depoda ücretli plan gerekir).
 
