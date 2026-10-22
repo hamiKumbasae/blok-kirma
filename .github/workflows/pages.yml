@@ -34,8 +34,8 @@ jobs:
       - name: Android TV uygulamasını derle
         run: |
           set -o pipefail
-          if ! gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log; then
-            grep -E "error|What went wrong|>|FAIL|Could not" build.log | head -30 | while IFS= read -r l; do echo "::error::$l"; done
+          if ! gradle -p android assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log; then
+            grep -vE "^\s*$" build.log | grep -vE "^(Download|> Task)" | tail -45 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
           fi
       - name: Siteyi hazırla
