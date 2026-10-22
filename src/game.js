@@ -159,6 +159,8 @@
     dockBall();
     S.mode = 'intro'; S.timer = 2.2; S.paused = false; S.introT = 0;
     S.creatures = []; S.spawnT = RULES.creatureFirst; S.levelT = 0;
+    // Önceki bölümün kırılma efektleri, kırıntıları, baloncukları ve atışları yeni bölüme taşınmasın.
+    S.effects = []; S.debris = []; S.bonuses = []; S.shots = [];
     save.write({ levelIndex: index, score: S.score, lives: S.lives, max: Math.max(index, save.read()?.max ?? 0) });
   }
 
