@@ -38,12 +38,12 @@
     towerPeriod: 5.9,     // gözlem (orta): Stage 4 kuleleri ~5.9 sn'de bir ortada buluşur
     towerLag: 0.12,       // gözlem (düşük): kule sıraları hafif dalgalı kayıyor (radyan/sıra)
     metalBreakable: false, // varsayım: metal bloklar bölüm bitişine sayılmıyor
-    ballSpeed: 135,       // gözlem (yüksek): trim_01, Stage 1 başı ~134 px/s (1264 px genişlik)
-    ballStageStep: 15,    // gözlem (orta): Stage 4'te ~187 px/s → bölüm başına ~+15
-    ballSpeedMax: 260,    // varsayım
-    paddleSpeed: 340,     // gözlem (orta): trim_05, çubuk en fazla ~300–370 px/s
+    ballSpeed: 230,       // kullanıcı isteği: orijinal (~135 px/s) çok yavaş geldi
+    ballStageStep: 4,     // bölüm başına hafif hızlanma (74 bölümde ~+290)
+    ballSpeedMax: 520,    // varsayım
+    paddleSpeed: 620,     // hızlı topa yetişsin diye artırıldı (orijinal ~340)
     shotSpeed: 700,       // varsayım (lazer ışını)
-    maxBounce: 1.05,      // varsayım (radyan, ~60°)
+    maxBounce: 0.9,       // varsayım (radyan, ~52°); çubuk kenarında top yana yatıp yavaş görünmesin
     laserTime: 12,        // varsayım (s), yalnızca debug
   };
 
@@ -361,7 +361,7 @@
     }
     collideBall(b, px, py);
     // Neredeyse yatay sonsuz döngüyü önle.
-    const minVy = Math.hypot(b.vx, b.vy) * 0.3;
+    const minVy = Math.hypot(b.vx, b.vy) * 0.45;
     if (Math.abs(b.vy) < minVy) { b.vy = b.vy < 0 ? -minVy : minVy; }
   }
 
