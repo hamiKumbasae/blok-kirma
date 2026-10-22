@@ -144,7 +144,7 @@
 
   function dockBall() {
     S.balls = [{ x: 0, y: 0, vx: 0, vy: 0, docked: true }];
-    S.shots = []; S.laser = 0; S.bonuses = []; S.fireT = 0; setPaddleW(PADDLE.baseW); S.speedMul = 1;
+    S.shots = []; S.laser = 0; S.bonuses = []; S.splitPending = false; S.fireT = 0; setPaddleW(PADDLE.baseW); S.speedMul = 1;
     syncDocked();
   }
   function syncDocked() {
@@ -232,16 +232,14 @@
     S.paddleX = Math.max(WALL_L, Math.min(WALL_R - w, cx - w / 2));
   }
   // 3'lü top: her uçan toptan ±20° açıyla iki top daha çıkar.
-  function tripleBalls() {
-    const add = [];
-    for (const b of S.balls) {
-      if (b.docked) continue;
-      for (const a of [-0.35, 0.35]) {
-        const c = Math.cos(a), sn = Math.sin(a);
-        add.push({ x: b.x, y: b.y, vx: b.vx * c - b.vy * sn, vy: b.vx * sn + b.vy * c, docked: false });
-      }
+  // Üçlü top: bonus alınınca hemen bölünmez; top bir sonraki sefer çubuğa
+  // çarptığında çarptığı noktadan üç top yelpaze gibi dağılır.
+  function tripleBalls() { S.splitPending = true; }
+  function splitAtPaddle(b, ang, speed) {
+    for (const d of [-0.45, 0.45]) {
+      const a = Math.max(-1.25, Math.min(1.25, ang + d));
+      S.balls.push({ x: b.x, y: b.y, vx: Math.sin(a) * speed, vy: -Math.cos(a) * speed, docked: false });
     }
-    S.balls.push(...add);
   }
   function hitBrick(br) {
     if (!Number.isFinite(br.hits)) { br.flash = 0.15; return; }
@@ -379,6 +377,7 @@
       const off = Math.max(-1, Math.min(1, (b.x - (S.paddleX + PADDLE.w / 2)) / (PADDLE.w / 2)));
       const speed = b.fire ? Math.hypot(b.vx, b.vy) : Math.min(RULES.ballSpeedMax * S.speedMul, Math.hypot(b.vx, b.vy) + 1);
       b.vx = Math.sin(off * RULES.maxBounce) * speed; b.vy = -Math.cos(off * RULES.maxBounce) * speed;
+      if (S.splitPending && !b.fire) { S.splitPending = false; splitAtPaddle(b, off * RULES.maxBounce, speed); }
       return;
     }
     collideBall(b);
