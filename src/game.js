@@ -474,6 +474,23 @@
       ctx.fillStyle = shade(base, -0.45);
       if (bottom) ctx.fillRect(x, y + h - B, w, B);
       if (right) ctx.fillRect(x + w - B, y, B, h);
+      // L parçalarının iç köşesi: iki kol birleşirken kabartma kesintisiz devam etsin.
+      const has = (dc, dr) => br.set.has(c + dc + ',' + (r + dr));
+      const G = 2, light = shade(base, 0.55), dark = shade(base, -0.45);
+      if (has(1, 0) && has(0, 1) && !has(1, 1)) {        // sağ-alt iç köşe
+        ctx.fillStyle = dark; ctx.fillRect(x + w - B - G, y + h - B - G, B + G, B + G);
+      }
+      if (has(-1, 0) && has(0, -1) && !has(-1, -1)) {    // sol-üst iç köşe
+        ctx.fillStyle = light; ctx.fillRect(x, y, B + G, B + G);
+      }
+      if (has(1, 0) && has(0, -1) && !has(1, -1)) {      // sağ-üst iç köşe
+        ctx.fillStyle = light; ctx.fillRect(x + w - B - G, y + G, B + G, B);
+        ctx.fillStyle = dark; ctx.fillRect(x + w - B - G, y, B, B + G);
+      }
+      if (has(-1, 0) && has(0, 1) && !has(-1, 1)) {      // sol-alt iç köşe
+        ctx.fillStyle = light; ctx.fillRect(x + G, y + h - B - G, B, B + G);
+        ctx.fillStyle = dark; ctx.fillRect(x, y + h - B - G, B + G, B);
+      }
     }
   }
 
