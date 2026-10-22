@@ -1,4 +1,4 @@
-// ExBlock haritaları — referans karelerinden ölçülerek çıkarıldı.
+// BlokYıldızı bölüm haritaları.
 //
 // Izgara: 18 sütun (c = 0..17) × satır (r = 0..). Bir hücre, 1264 px genişliğe
 // ölçeklenmiş video karesinde 65 × 63.5 px (yarım tuğla). Satır 0, HUD'ın hemen
@@ -466,7 +466,7 @@
   ];
 
 
-  // Stage 32–74 — masaüstü ekran kaydı (uzun 4× YouTube videosu, Stage 31 → oyun sonu).
+  // Stage 32–74.
   // Kareler kayıttan otomatik hücre çıkarımıyla ölçülüp elle düzeltildi
   // (reference-frames/kayit2-stage-NN.jpg). Kayan blokların hızı yaklaşık.
   const stage32 = [
