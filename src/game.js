@@ -19,7 +19,7 @@
     bonusChance: 0.2,     // varsayım: Stage 2'de ~46 tuğladan ~10 baloncuk (videom_parca_01)
     // Baloncuk türleri: lazer, can (gözlem), 3'lü top ve genişlik (kullanıcının
     // hatırladığı). Oranlar varsayım.
-    bonusShares: { laser: 0.16, triple: 0.15, wide: 0.14, shrink: 0.1, slow: 0.1, fast: 0.08, life: 0.07 },
+    bonusShares: { laser: 0.16, triple: 0.15, wide: 0.13, slow: 0.1, fast: 0.08, life: 0.08 }, // kısa çubuk kayıtta görülmedi → kaldırıldı; kalan pay yalnız puan
     shrinkW: 130,         // varsayım: kısa çubuk (ceza)
     slowMul: 0.7, fastMul: 1.4, // varsayım: yavaşlatma / hızlandırma çarpanları
     fireChance: 0.05,     // varsayım: kırılan tuğladan ateş topu çıkma olasılığı
@@ -423,7 +423,7 @@
     S.debris = S.debris.filter((d) => d.t < 1.2 && d.y < H);
     for (const bn of S.bonuses) {
       bn.y += RULES.bonusFall * dt;
-      if (bn.y + 22 >= PADDLE.y && bn.y - 22 <= PADDLE.y + PADDLE.h && bn.x >= S.paddleX - 10 && bn.x <= S.paddleX + PADDLE.w + 10) {
+      if (bn.y + BUB_R >= PADDLE.y && bn.y - BUB_R <= PADDLE.y + PADDLE.h && bn.x >= S.paddleX - 10 && bn.x <= S.paddleX + PADDLE.w + 10) {
         bn.caught = true; S.score += RULES.bonusScore;
         if (bn.kind === 'laser') S.laser = Infinity; // gözlem: lazer bölüm sonuna kadar sürüyor
         if (bn.kind === 'life') S.lives++;
@@ -434,7 +434,7 @@
 
       }
     }
-    S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - 22 < H);
+    S.bonuses = S.bonuses.filter((bn) => !bn.caught && bn.y - BUB_R < H);
 
     if (S.balls.length === 0) {
       if (infiniteLives) { dockBall(); return; }
@@ -548,32 +548,52 @@
       ctx.strokeStyle = d.red ? 'rgba(200,60,30,.85)' : 'rgba(200,200,210,.75)';
       ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.vx * 0.03, d.y - d.vy * 0.03); ctx.stroke();
     }
-    for (const bn of S.bonuses) {
-      const g = ctx.createRadialGradient(bn.x - 6, bn.y - 6, 2, bn.x, bn.y, 22);
-      g.addColorStop(0, 'rgba(220,235,255,.95)'); g.addColorStop(0.7, 'rgba(90,130,220,.55)'); g.addColorStop(1, 'rgba(60,90,200,.25)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bn.x, bn.y, 22, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(210,225,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
-      // Can baloncuğunun görünüşü doğrulanmadı; yeşil çekirdek seçildi.
-      if (bn.kind === 'triple') {
-        ctx.fillStyle = '#ffffff';
-        for (const [dx, dy] of [[-6, 4], [6, 4], [0, -6]]) { ctx.beginPath(); ctx.arc(bn.x + dx, bn.y + dy, 5, 0, Math.PI * 2); ctx.fill(); }
-      } else if (bn.kind === 'fire') {
-        ctx.fillStyle = '#ff9a2a'; ctx.beginPath(); ctx.arc(bn.x, bn.y, 10, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff3a0'; ctx.beginPath(); ctx.arc(bn.x - 3, bn.y - 3, 4, 0, Math.PI * 2); ctx.fill();
-      } else if (bn.kind === 'shrink') {
-        ctx.fillStyle = '#ff5a3a'; ctx.fillRect(bn.x - 7, bn.y - 4, 14, 8);
-        ctx.fillStyle = '#ffcf3a'; ctx.fillRect(bn.x - 9, bn.y - 6, 3, 12); ctx.fillRect(bn.x + 6, bn.y - 6, 3, 12);
-      } else if (bn.kind === 'slow' || bn.kind === 'fast') {
-        outlinedText(bn.kind === 'slow' ? 'S' : 'F', bn.x, bn.y + 1, 22, bn.kind === 'slow' ? '#7fd0ff' : '#ff7a4a', 'center');
-      } else if (bn.kind === 'wide') {
-        ctx.fillStyle = '#7dff5a'; ctx.fillRect(bn.x - 13, bn.y - 4, 26, 8);
-        ctx.fillStyle = '#ffcf3a'; ctx.fillRect(bn.x - 15, bn.y - 6, 4, 12); ctx.fillRect(bn.x + 11, bn.y - 6, 4, 12);
-      } else {
-        ctx.fillStyle = bn.kind === 'laser' ? '#f0c840' : bn.kind === 'life' ? '#ff5a8a' : '#2a3a90';
-        ctx.beginPath(); ctx.arc(bn.x, bn.y, 8, 0, Math.PI * 2); ctx.fill();
-      }
-    }
+    for (const bn of S.bonuses) drawBubble(bn);
     for (const c of S.creatures) drawCreature(c);
+  }
+
+  // Ödül baloncuğu (orijinal karelerden): koyu saydam küre, ince gri kenar,
+  // sol üstte beyaz parlama, sağ altta mavi yansıma; içinde ödülün simgesi.
+  // Eşleşmeler: altın çekirdek = lazer (kayıtta doğrulandı), yeşil çubuk = ekstra can
+  // (X6→X7 görüldü), üç gümüş top = üçlü top; mavi / mor / turuncu çekirdeklerin
+  // etkisi kesin değil (yavaşlatma / geniş çubuk / hızlandırma varsayım).
+  const BUB_R = 37;  // orijinalde baloncuk ~75 px çaplı
+  function drawBubble(bn) {
+    const x = bn.x, y = bn.y, R = BUB_R;
+    const g = ctx.createRadialGradient(x - 6, y - 8, 4, x, y, R);
+    g.addColorStop(0, 'rgba(40,50,90,.35)'); g.addColorStop(0.75, 'rgba(12,16,40,.55)'); g.addColorStop(1, 'rgba(70,80,120,.55)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fill();
+    // çekirdek (30 px'lik tasarım, baloncuğa göre büyütülür)
+    ctx.save(); ctx.translate(x, y); ctx.scale(R / 22, R / 22); ctx.translate(-x, -y);
+    const k = bn.kind, cy = y + 4;
+    const ball = (bx, by, r, c1, c2) => {
+      const gg = ctx.createRadialGradient(bx - r * 0.35, by - r * 0.35, 1, bx, by, r);
+      gg.addColorStop(0, c1); gg.addColorStop(1, c2); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
+    };
+    const capsule = (bx, by, w, h, c1, c2) => {
+      const gg = ctx.createLinearGradient(bx - w / 2, 0, bx + w / 2, 0); gg.addColorStop(0, c1); gg.addColorStop(1, c2);
+      ctx.fillStyle = gg; ctx.beginPath(); ctx.roundRect(bx - w / 2, by - h / 2, w, h, w / 2); ctx.fill();
+    };
+    if (k === 'laser') { ball(x - 5, cy + 2, 9, '#ffe680', '#c8901a'); ball(x + 6, cy + 3, 8, '#ffd860', '#b07812'); }
+    else if (k === 'triple') { ball(x - 8, cy + 3, 7, '#ffffff', '#8c94a8'); ball(x + 8, cy + 3, 7, '#ffffff', '#8c94a8'); ball(x, cy - 9, 7, '#ffffff', '#8c94a8'); }
+    else if (k === 'life') {
+      const gg = ctx.createLinearGradient(0, cy - 5, 0, cy + 5); gg.addColorStop(0, '#b8ff8a'); gg.addColorStop(0.5, '#4fbf3a'); gg.addColorStop(1, '#1d6a17');
+      ctx.fillStyle = gg; ctx.fillRect(x - 17, cy - 5, 34, 10);
+      ctx.fillStyle = '#e0a020'; ctx.fillRect(x - 20, cy - 6, 4, 12); ctx.fillRect(x + 16, cy - 6, 4, 12);
+    }
+    else if (k === 'slow') { capsule(x - 5, cy, 9, 20, '#5a9af0', '#1f4fa8'); capsule(x + 6, cy, 9, 20, '#4a8ae0', '#1a429a'); }
+    else if (k === 'wide') { capsule(x - 5, cy, 9, 20, '#a890f0', '#4a2fa0'); capsule(x + 6, cy, 9, 20, '#9a80e8', '#40289a'); }
+    else if (k === 'fast') ball(x + 1, cy + 2, 10, '#ffb060', '#d0500a');
+    else ball(x, cy + 2, 8, '#3a4470', '#121830'); // yalnız puan
+    ctx.restore();
+    // kenar, mavi yansıma, parlama
+    ctx.strokeStyle = 'rgba(185,195,215,.85)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, R - 1, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(70,120,230,.9)'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(x, y, R - 7, Math.PI * 0.12, Math.PI * 0.55); ctx.stroke(); ctx.lineCap = 'butt';
+    const hx = x - R * 0.43, hy = y - R * 0.47, hr = R * 0.37;
+    const hg = ctx.createRadialGradient(hx, hy, 1, hx, hy, hr);
+    hg.addColorStop(0, 'rgba(255,255,255,.95)'); hg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(hx, hy, hr, hr * 0.72, -0.7, 0, Math.PI * 2); ctx.fill();
   }
 
   function drawCreature(c) {
