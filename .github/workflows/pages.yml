@@ -41,7 +41,7 @@ jobs:
       - name: Siteyi hazırla
         run: |
           mkdir _site
-          cp -r index.html src _site/
+          cp -r index.html kumanda.html src _site/
           cp android/app/build/outputs/apk/release/app-release.apk _site/tv.apk
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

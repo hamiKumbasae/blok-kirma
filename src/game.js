@@ -907,4 +907,32 @@
     speed() { cycleSpeed(); },
     lives() { toggleLives(); },
   };
+
+  // ---------- dış kontrol (telefon kumandası: src/remote.js) ----------
+  window.__remote = {
+    // Çubuğu mantıksal piksel kadar kaydırır; yalnız oyunda ve bölüm girişinde.
+    move(dx) {
+      if (S.paused || (S.mode !== 'play' && S.mode !== 'intro')) return;
+      S.paddleX = Math.max(WALL_L, Math.min(WALL_R - PADDLE.w, S.paddleX + dx));
+    },
+    // Menüde ve bölüm seçiminde bir adım: dx, dy ∈ {-1, 0, 1}.
+    nav(dx, dy) {
+      if (S.mode === 'menu') menuMove(dy || dx);
+      else if (S.mode === 'select') selMove(dx + dy * SEL.cols);
+    },
+    // Duraklatılmışken "seç" devam ettirir; başka her durumda Enter ile aynı.
+    confirm() { if (S.paused) togglePause(); else confirm(); },
+    pause() { togglePause(); },
+    menu() { S.mode = 'menu'; S.paused = false; },
+    speed() { cycleSpeed(); },
+    lives() { toggleLives(); },
+    fieldWidth: WALL_R - WALL_L,
+    state() {
+      return {
+        mode: S.mode, paused: S.paused, stage: LEVELS[S.levelIndex].stage, score: S.score,
+        lives: S.lives, infinite: infiniteLives, speed: gameSpeed,
+        docked: S.balls.length > 0 && S.balls.every((b) => b.docked),
+      };
+    },
+  };
 })();

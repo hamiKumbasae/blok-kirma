@@ -11,8 +11,9 @@ import android.webkit.WebView;
 
 /**
  * BlokYıldızı — Android TV kabuğu. Oyun (index.html + src/) uygulamanın içinde
- * gelir; internet gerekmez. Kumandanın ok tuşları ve OK doğrudan oyuna gider,
- * Geri / Oynat-Duraklat / renkli tuşlar burada çevrilir.
+ * gelir; internet gerekmez (yalnız telefon kumandası internet kullanır). Kumandanın
+ * ok tuşları ve OK doğrudan oyuna gider, Geri / Oynat-Duraklat / renkli tuşlar
+ * burada çevrilir.
  */
 public class MainActivity extends Activity {
     private WebView web;
@@ -78,6 +79,10 @@ public class MainActivity extends Activity {
                 return true;
             case KeyEvent.KEYCODE_PROG_GREEN:
                 if (down && e.getRepeatCount() == 0) js("window.__tv && window.__tv.lives()");
+                return true;
+            case KeyEvent.KEYCODE_PROG_BLUE:
+                // Telefon kumandası panelini (QR kod) aç / kapat.
+                if (down && e.getRepeatCount() == 0) js("window.__tv && window.__tv.phone && window.__tv.phone()");
                 return true;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
