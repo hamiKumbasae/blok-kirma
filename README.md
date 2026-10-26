@@ -25,10 +25,13 @@ BlokYıldızı, eski Topfield uydu alıcılarında bulunan *ExBlock* oyununa duy
 | Duraklat | P | Duraklat | ⏯ veya kırmızı |
 | Hız (1× – 2.5×) | H | Hız | Sarı veya ⏩ |
 | Sonsuz can aç/kapa | L | Can | Yeşil |
+| Görünüm (Retro / Modern) | G | Görünüm | — |
 | Menü / çıkış | Esc | Menü | ← Geri |
 | Telefonu kumanda yap | K / Telefonla oyna | — | Menüde ▶ veya mavi tuş |
 
 Menüden **New Game**, **Continue** (kaldığın bölümden) veya **Stage Select** (istediğin bölüm) seçilebilir. Sonsuz can varsayılan olarak açıktır.
+
+**Görünüm:** Oyun varsayılan olarak 80'ler–90'lar konsol ve VCD oyunlarını andıran **retro** görünümde açılır: düşük çözünürlüklü iri pikseller, dönemin sınırlı renk paleti ve titreşimli (dither) geçişler, soluk/sararmış renkler, tarama çizgileri, hafif renk taşması ve piksel yazı tipi. **Görünüm** düğmesi ya da G tuşu eski parlak **modern** görünüme geçirir; seçim hatırlanır. Tarayıcı WebGL desteklemiyorsa oyun modern görünümde açılır.
 
 **Ödül baloncukları:** altın çekirdek = lazer çubuk · üç gümüş top = üçlü top · yeşil çubuk = ekstra can · mavi = yavaşlatma · mor = geniş çubuk · turuncu = hızlandırma. Ara sıra tuğlaları delip geçen ateş topu çıkar; ekranda dolaşan yaratıkları vurmak ek puan verir.
 
@@ -63,6 +66,7 @@ Güncellemek için aynı adresten tekrar indirip kurmak yeterlidir; kayıtlar si
 - `index.html`, `src/game.js` — oyun motoru (tek sayfa, bağımlılık yok)
 - `src/levels.js` — 74 bölümün haritaları
 - `tests/levels.test.js` — harita doğrulama: `node tests/levels.test.js`
+- Retro görünüm `src/game.js` içinde: oyun 3 kat küçük bir tuvale çizilir, WebGL gölgelendiricisi palete indirger ve ekran efektlerini ekler (`LOOK` ayarları). Piksel yazı tipi `src/fonts/` (Press Start 2P, SIL OFL 1.1)
 - `src/remote.js`, `kumanda.html` — telefon kumandası (ekran ve telefon tarafı). `src/vendor/` içindeki PeerJS ve QR kütüphaneleri yalnız kumanda açılınca yüklenir; oyunun kendisi bağımlılıksızdır. Yerelde ücretsiz sunucu yerine kendi PeerJS sunucunla denemek için adrese `?peer=127.0.0.1:9000` ekle (`npx peerjs --port 9000`).
 - `android/` — Android TV kabuğu (WebView); her `main` push'unda GitHub Actions ile derlenir
 - Her push'ta site GitHub Pages'e otomatik yayınlanır (`.github/workflows/pages.yml`)

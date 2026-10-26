@@ -56,10 +56,169 @@
     'red-s': '#b5261b', 'blue-s': '#6a9ad8', 'yellow-s': '#9c9018', 'purple-s': '#7870ac', 'violet-s': '#a35ec9', 'green-s': '#5e8c19', 'silver-s': '#b9bccb', metal: '#a1a580',
   };
 
-  const canvas = document.querySelector('canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = W; canvas.height = H;
+  let canvas = document.querySelector('canvas');
   const debug = new URLSearchParams(location.search).has('debug');
+
+  // ---------- görünüm: retro / modern ----------
+  // Oyun görünmez bir tuvale çizilir, present() onu WebGL ile ekrana aktarır.
+  // Retro görünümde tuval PIX kat küçüktür (iri pikseller); renkler 80'ler
+  // konsollarının sınırlı paletine sıralı titreşimle (Bayer) indirgenir, sonra
+  // soluk/sararmış tonlar, tarama çizgileri, hafif yatay renk taşması (VCD),
+  // köşe kararması ve kumlanma eklenir. WebGL yoksa oyun doğrudan çizilir.
+  const PIX = 3, LO_W = Math.ceil(W / PIX), LO_H = Math.ceil(H / PIX);
+  const VIEW_KEY = 'blok-gorunum';
+  let retro = true;
+  try { if (localStorage.getItem(VIEW_KEY) === 'modern') retro = false; } catch { /* yok say */ }
+  const hi = document.createElement('canvas'); hi.width = W; hi.height = H;
+  const lo = document.createElement('canvas'); lo.width = LO_W; lo.height = LO_H;
+  const hiCtx = hi.getContext('2d'), loCtx = lo.getContext('2d');
+  let gl = null, glp = null, direct = null;
+  let ctx = hiCtx, PXS = 1; // PXS: tuval pikseli / mantıksal piksel (gölge, filtre ölçüleri için)
+
+  // Palet: NES döneminin yaygın 64 renklik tablosu (tekrarlar ayıklanır).
+  const PALETTE = (
+    '7c7c7c 0000fc 0000bc 4428bc 940084 a80020 a81000 881400 503000 007800 006800 005800 004058 000000 ' +
+    'bcbcbc 0078f8 0058f8 6844fc d800cc e40058 f83800 e45c10 ac7c00 00b800 00a800 00a844 008888 ' +
+    'f8f8f8 3cbcfc 6888fc 9878f8 f878f8 f85898 f87858 fca044 f8b800 b8f818 58d854 58f898 00e8d8 787878 ' +
+    'fcfcfc a4e4fc b8b8f8 d8b8f8 f8b8f8 f8a4c0 f0d0b0 fce0a8 f8d878 d8f878 b8f8b8 b8f8d8 00fcfc f8d8f8'
+  ).split(' ');
+  const LOOK = {
+    inSat: 1.4,      // palete girmeden önce doygunluk (yüksek: renk tonu korunsun, griye kaçmasın)
+    outSat: 0.62,    // paletten çıkan rengin doygunluğu (soluk)
+    dither: 0.11,    // titreşim genliği (0–1)
+    bleed: 0.22,     // soldaki pikselden taşma
+    scan: 0.34,      // tarama çizgisi koyuluğu
+    vignette: 0.5,
+    grain: 0.03,
+  };
+  // 32×32×32 renk tablosu (1024×32 doku): giriş rengi → en yakın palet rengi → eskitilmiş ton.
+  function buildLut() {
+    const seen = new Set(), pal = [];
+    for (const h of PALETTE) if (!seen.has(h)) { seen.add(h); pal.push([parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4), 16)]); }
+    // Uzay arka planının koyu tonları için renkli girdilerin karanlık kopyaları.
+    for (const c of pal.slice()) if (Math.max(...c) - Math.min(...c) > 60) pal.push(c.map((v) => Math.round(v * 0.5)));
+    const sat = (c, s) => { const l = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]; return c.map((v) => l + (v - l) * s); };
+    // Eskitme: siyah sıcak koyu kahveye, beyaz kirli krem rengine kayar.
+    const out = pal.map((c) => { const [r, g, b] = sat(c, LOOK.outSat); return [18 + r * 0.86, 15 + g * 0.84, 12 + b * 0.76].map(Math.round); });
+    const data = new Uint8Array(1024 * 32 * 4);
+    for (let g = 0; g < 32; g++) for (let b = 0; b < 32; b++) for (let r = 0; r < 32; r++) {
+      const [R, G, B] = sat([r * 255 / 31, g * 255 / 31, b * 255 / 31], LOOK.inSat);
+      let best = 0, bd = Infinity;
+      for (let i = 0; i < pal.length; i++) {
+        const p = pal[i], rm = (R + p[0]) / 2, dr = R - p[0], dg = G - p[1], db = B - p[2];
+        const d = (2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db;
+        if (d < bd) { bd = d; best = i; }
+      }
+      const o = (g * 1024 + b * 32 + r) * 4, c = out[best];
+      data[o] = c[0]; data[o + 1] = c[1]; data[o + 2] = c[2]; data[o + 3] = 255;
+    }
+    return data;
+  }
+
+  const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform sampler2D uSrc, uLut;
+uniform vec2 uOut, uView, uLo;
+uniform float uRetro, uTime;
+float bayer2(vec2 a) { a = floor(a); return fract(dot(a, vec2(0.5, a.y * 0.75))); }
+float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
+vec3 pal(vec2 cell) {
+  vec3 c = texture2D(uSrc, (cell + 0.5) / uLo).rgb;
+  c = clamp(c + (bayer4(cell) - 0.47) * ${LOOK.dither.toFixed(3)}, 0.0, 1.0);
+  vec3 q = floor(c * 31.0 + 0.5);
+  return texture2D(uLut, vec2((q.b * 32.0 + q.r + 0.5) / 1024.0, (q.g + 0.5) / 32.0)).rgb;
+}
+void main() {
+  vec2 f = vec2(gl_FragCoord.x, uOut.y - gl_FragCoord.y) / uOut;
+  if (uRetro < 0.5) { gl_FragColor = vec4(texture2D(uSrc, f).rgb, 1.0); return; }
+  vec2 p = f * uView, cell = floor(p);
+  vec3 col = mix(pal(cell), pal(cell - vec2(1.0, 0.0)), ${LOOK.bleed.toFixed(3)});
+  float rowPx = uOut.y / uView.y;
+  float k = ${LOOK.scan.toFixed(3)} * clamp((rowPx - 1.6) / 2.0, 0.0, 1.0);
+  col *= 1.0 - k * (1.0 - sin(3.14159 * fract(p.y)));
+  col *= 1.0 + k * 0.3;
+  vec2 v = (f - 0.5) * vec2(1.0, 1.15);
+  col *= 1.0 - dot(v, v) * ${LOOK.vignette.toFixed(3)};
+  float n = fract(sin(dot(floor(gl_FragCoord.xy * 0.5) + uTime, vec2(12.9898, 78.233))) * 43758.5453);
+  col += (n - 0.5) * ${LOOK.grain.toFixed(3)};
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+  function initGL() {
+    const g = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, stencil: false, preserveDrawingBuffer: false });
+    if (!g) return null;
+    const sh = (type, src) => { const s = g.createShader(type); g.shaderSource(s, src); g.compileShader(s); if (!g.getShaderParameter(s, g.COMPILE_STATUS)) throw new Error(g.getShaderInfoLog(s)); return s; };
+    const prog = g.createProgram();
+    g.attachShader(prog, sh(g.VERTEX_SHADER, 'attribute vec2 a; void main() { gl_Position = vec4(a, 0.0, 1.0); }'));
+    g.attachShader(prog, sh(g.FRAGMENT_SHADER, FS));
+    g.linkProgram(prog);
+    if (!g.getProgramParameter(prog, g.LINK_STATUS)) throw new Error(g.getProgramInfoLog(prog));
+    g.useProgram(prog);
+    const buf = g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER, buf);
+    g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), g.STATIC_DRAW);
+    const a = g.getAttribLocation(prog, 'a'); g.enableVertexAttribArray(a); g.vertexAttribPointer(a, 2, g.FLOAT, false, 0, 0);
+    const tex = (unit, filter) => {
+      const t = g.createTexture(); g.activeTexture(g.TEXTURE0 + unit); g.bindTexture(g.TEXTURE_2D, t);
+      for (const [k, v] of [[g.TEXTURE_MIN_FILTER, filter], [g.TEXTURE_MAG_FILTER, filter], [g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE], [g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE]]) g.texParameteri(g.TEXTURE_2D, k, v);
+      return t;
+    };
+    tex(1, g.NEAREST);
+    g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, 1024, 32, 0, g.RGBA, g.UNSIGNED_BYTE, buildLut());
+    const src = tex(0, g.LINEAR);
+    const u = (n) => g.getUniformLocation(prog, n);
+    g.uniform1i(u('uSrc'), 0); g.uniform1i(u('uLut'), 1);
+    g.uniform2f(u('uView'), W / PIX, H / PIX); g.uniform2f(u('uLo'), LO_W, LO_H);
+    glp = { src, uOut: u('uOut'), uRetro: u('uRetro'), uTime: u('uTime'), mode: null };
+    return g;
+  }
+
+  // Ekrandaki tuvalin piksel sayısı görüntülendiği boyuta uyar; tarama
+  // çizgileri her ekranda düzgün ve dalgalanmasız çıkar.
+  function fitCanvas() {
+    if (!gl) return;
+    const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    let w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+    if (!w || !h) { w = W; h = H; }
+    const k = Math.min(1, 1920 / w); w = Math.round(w * k); h = Math.round(h * k);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  }
+
+  function present(useRetro, t) {
+    if (glp.mode !== useRetro) {
+      glp.mode = useRetro;
+      gl.activeTexture(gl.TEXTURE0);
+      const f = useRetro ? gl.NEAREST : gl.LINEAR;
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, f); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f);
+    }
+    gl.activeTexture(gl.TEXTURE0);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, useRetro ? lo : hi);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(glp.uOut, canvas.width, canvas.height);
+    gl.uniform1f(glp.uRetro, useRetro ? 1 : 0);
+    gl.uniform1f(glp.uTime, (t / 1000) % 97);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  try { gl = initGL(); } catch (e) {
+    // Tuval artık WebGL'e bağlı; 2D çizim için yerine boş bir kopyası konur.
+    console.warn('WebGL görünümü kurulamadı:', e);
+    gl = null;
+    const fresh = canvas.cloneNode(false); canvas.replaceWith(fresh); canvas = fresh;
+  }
+  if (gl) {
+    fitCanvas();
+    if (window.ResizeObserver) new ResizeObserver(fitCanvas).observe(canvas);
+    window.addEventListener('resize', fitCanvas);
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); gl = null; });
+    canvas.addEventListener('webglcontextrestored', () => { try { gl = initGL(); fitCanvas(); } catch { gl = null; } });
+  } else {
+    canvas.width = W; canvas.height = H;
+    direct = canvas.getContext('2d');
+  }
 
   // ---------- kayıt (Continue) ----------
   const SAVE_KEY = 'exblock-save-v1';
@@ -566,7 +725,7 @@
     g.addColorStop(0, 'rgba(10,14,30,.45)'); g.addColorStop(0.8, 'rgba(6,8,20,.6)'); g.addColorStop(1, 'rgba(60,70,100,.5)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fill();
     // çekirdek (30 px'lik tasarım, baloncuğa göre büyütülür)
-    ctx.save(); ctx.translate(x, y); ctx.scale(R / 20, R / 20); ctx.filter = 'blur(1.2px)'; ctx.translate(-x, -y);
+    ctx.save(); ctx.translate(x, y); ctx.scale(R / 20, R / 20); ctx.filter = `blur(${(1.2 * PXS).toFixed(2)}px)`; ctx.translate(-x, -y);
     const k = bn.kind, cy = y + 4;
     const ball = (bx, by, r, c1, c2) => {
       const gg = ctx.createRadialGradient(bx - r * 0.35, by - r * 0.35, 1, bx, by, r);
@@ -616,7 +775,7 @@
     for (const s of S.shots) {
       const len = 110, g = ctx.createLinearGradient(0, s.y - len, 0, s.y);
       g.addColorStop(0, 'rgba(255,170,40,0)'); g.addColorStop(0.35, 'rgba(255,190,60,.85)'); g.addColorStop(1, 'rgba(255,240,170,1)');
-      ctx.shadowColor = 'rgba(255,180,40,.9)'; ctx.shadowBlur = 18;
+      ctx.shadowColor = 'rgba(255,180,40,.9)'; ctx.shadowBlur = 18 * PXS;
       ctx.fillStyle = g; ctx.fillRect(s.x - 7, s.y - len, 14, len);
       ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,230,.95)'; ctx.fillRect(s.x - 2.5, s.y - len * 0.7, 5, len * 0.7);
     }
@@ -626,7 +785,7 @@
   function drawBall(b) {
     if (b.fire) {
       const R = b.r, sp = Math.hypot(b.vx, b.vy) || 1;
-      ctx.save(); ctx.shadowColor = 'rgba(255,150,30,.9)'; ctx.shadowBlur = 24;
+      ctx.save(); ctx.shadowColor = 'rgba(255,150,30,.9)'; ctx.shadowBlur = 24 * PXS;
       const tg = ctx.createLinearGradient(b.x, b.y, b.x - b.vx / sp * 90, b.y - b.vy / sp * 90);
       tg.addColorStop(0, 'rgba(255,170,40,.75)'); tg.addColorStop(1, 'rgba(255,90,20,0)');
       ctx.strokeStyle = tg; ctx.lineWidth = R * 1.4; ctx.lineCap = 'round';
@@ -641,11 +800,45 @@
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2); ctx.fill();
   }
 
-  function outlinedText(text, x, y, size, fill, align = 'left') {
+  // Retro görünümde yazılar piksel yazı tipiyle (Press Start 2P, 8 piksellik
+  // ızgara) ve 8'in katı boyutlarda yazılır ki keskin kalsın; kenar çizgisi
+  // yerine dönemin oyunlarındaki gibi sağ-alta tek piksellik gölge düşer.
+  const isRetro = () => PXS < 1;
+  function pixelSize(size, text, maxWidth) {
+    let px = Math.max(8, Math.floor(size / PIX / 8) * 8);
+    // Press Start 2P eş aralıklı: her harf 1 em genişliğinde.
+    while (maxWidth && px > 8 && [...text].length * px * PIX > maxWidth) px -= 8;
+    return px * PIX;
+  }
+  function textWidth(text, size, maxWidth) {
+    if (isRetro()) return [...text].length * pixelSize(size, text, maxWidth);
     ctx.font = `900 ${size}px "Arial Black", Impact, sans-serif`;
+    return ctx.measureText(text).width;
+  }
+  function outlinedText(text, x, y, size, fill, align = 'left', maxWidth) {
     ctx.textAlign = align; ctx.textBaseline = 'middle';
+    if (isRetro()) {
+      const s = pixelSize(size, text, maxWidth);
+      ctx.font = `${s}px "Press Start 2P", monospace`;
+      x = Math.round(x / PIX) * PIX; y = Math.round(y / PIX) * PIX;
+      const sh = Math.max(PIX, Math.round(s / 8 / PIX) * PIX);
+      ctx.fillStyle = '#1a1030'; ctx.fillText(text, x + sh, y + sh);
+      ctx.fillStyle = fill; ctx.fillText(text, x, y);
+      return;
+    }
+    ctx.font = `900 ${size}px "Arial Black", Impact, sans-serif`;
     ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(4, size / 7); ctx.strokeStyle = '#2a1650';
     ctx.strokeText(text, x, y); ctx.fillStyle = fill; ctx.fillText(text, x, y);
+  }
+  // Piksel yazı tipi oyunla birlikte gelir (internetsiz de çalışsın).
+  if (window.FontFace && document.fonts) {
+    for (const [file, range] of [
+      ['latin', 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215'],
+      ['latin-ext', 'U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF'],
+    ]) {
+      const f = new FontFace('Press Start 2P', `url(src/fonts/press-start-2p-${file}-400-normal.woff2)`, { unicodeRange: range });
+      f.load().then((ff) => document.fonts.add(ff)).catch(() => { /* yazı tipi yoksa monospace */ });
+    }
   }
 
   function drawFrame() {
@@ -672,11 +865,23 @@
     icon.addColorStop(0, '#b8ff8a'); icon.addColorStop(1, '#2a8a20');
     ctx.fillStyle = icon; ctx.beginPath(); ctx.roundRect(66, 22, 96, 16, 8); ctx.fill();
     ctx.fillStyle = '#ffcf3a'; ctx.fillRect(70, 20, 6, 20); ctx.fillRect(152, 20, 6, 20);
-    outlinedText('X ' + (infiniteLives ? '∞' : S.lives), 176, HUD_H / 2 + 2, 38, '#f4ecb0');
+    // Piksel yazı tipinde ∞ yok; retro görünümde küçük bir piksel simgesi çizilir.
+    const pixInf = infiniteLives && isRetro();
+    outlinedText('X ' + (infiniteLives ? (pixInf ? '' : '∞') : S.lives), 176, HUD_H / 2 + 2, 38, '#f4ecb0');
+    if (pixInf) pixelInfinity(176 + textWidth('X ', 38), HUD_H / 2 + 2, pixelSize(38, 'X') / 8, '#f4ecb0');
     outlinedText('SCORE', 692, HUD_H / 2 + 2, 38, '#f4ecb0');
     const digits = ctx.createLinearGradient(0, 12, 0, HUD_H - 8);
     digits.addColorStop(0, '#fff2a0'); digits.addColorStop(0.55, '#f2b52a'); digits.addColorStop(1, '#b86a12');
     outlinedText(String(S.score).padStart(8, '0'), 862, HUD_H / 2 + 2, 38, digits);
+  }
+
+  function pixelInfinity(x, y, p, fill) {
+    const rows = ['.##.##.', '#..#..#', '#..#..#', '.##.##.'];
+    x = Math.round(x / PIX) * PIX; y = Math.round(y / PIX) * PIX - rows.length * p / 2;
+    for (const [col, dx] of [['#1a1030', p], [fill, 0]]) {
+      ctx.fillStyle = col;
+      rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === '#') ctx.fillRect(x + i * p + dx, y + j * p + dx, p, p); });
+    }
   }
 
   function drawStageBanner() {
@@ -684,15 +889,18 @@
     const label = lv.stage ? 'Stage ' + lv.stage : 'Stage ?';
     const g = ctx.createLinearGradient(0, 230, 0, 330);
     g.addColorStop(0, '#fff6a0'); g.addColorStop(0.5, '#f5c23a'); g.addColorStop(1, '#d4641a');
-    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowOffsetY = 6;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowOffsetY = 6 * PXS;
     outlinedText(label, W / 2, 285, 110, g, 'center');
     ctx.restore();
     if (!lv.stage) outlinedText('(bölüm numarası doğrulanmadı)', W / 2, 365, 26, '#e8e2ff', 'center');
   }
 
   function panel(title, lines) {
-    ctx.fillStyle = 'rgba(4,4,18,.78)'; ctx.fillRect(260, 330, 744, 230);
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.strokeRect(260, 330, 744, 230);
+    // Retro yazı tipi geniş; kutu en uzun satıra göre genişler.
+    const need = Math.max(textWidth(title, 58), ...lines.map((l) => textWidth(l, 26))) + 80;
+    const bw = Math.min(W - 80, Math.max(744, need)), bx = (W - bw) / 2;
+    ctx.fillStyle = 'rgba(4,4,18,.78)'; ctx.fillRect(bx, 330, bw, 230);
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.strokeRect(bx, 330, bw, 230);
     outlinedText(title, W / 2, 400, 58, '#ffd84a', 'center');
     lines.forEach((l, i) => outlinedText(l, W / 2, 470 + i * 42, 26, '#e8e2ff', 'center'));
   }
@@ -700,7 +908,7 @@
   function drawMenu() {
     const t = ctx.createLinearGradient(0, 160, 0, 300);
     t.addColorStop(0, '#fff6a0'); t.addColorStop(0.5, '#f5c23a'); t.addColorStop(1, '#d4641a');
-    outlinedText('BlokYıldızı', W / 2, 235, 150, t, 'center');
+    outlinedText('BlokYıldızı', W / 2, 235, 150, t, 'center', 1120);
     const hasSave = !!save.read();
     MENU.forEach((item, i) => {
       const y = MENU_Y0 + i * MENU_DY;
@@ -718,7 +926,7 @@
     if (thumbs[i]) return thumbs[i];
     const c = document.createElement('canvas'); c.width = SEL.w; c.height = SEL.h - 28;
     const g = c.getContext('2d'), sx = c.width / (WALL_R - WALL_L), sy = c.height / (760 - FIELD_TOP);
-    g.fillStyle = 'rgba(2,2,10,.85)'; g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = 'rgba(2,2,10,.95)'; g.fillRect(0, 0, c.width, c.height);
     for (const b of LEVELS[i].bricks) {
       g.fillStyle = COLORS[b.t];
       for (const [cc, r] of cellsOf(b)) {
@@ -741,16 +949,29 @@
       ctx.drawImage(thumb(i), x, y);
       ctx.strokeStyle = on ? '#ffd84a' : 'rgba(200,195,255,.45)'; ctx.lineWidth = on ? 6 : 2;
       ctx.strokeRect(x, y, SEL.w, SEL.h);
-      outlinedText('Stage ' + lv.stage, x + 8, y + SEL.h - 8, 19, on ? '#ffd84a' : '#f4ecb0');
+      // Retro yazı tipi geniş: küçük kutuda yalnız numara.
+      outlinedText(isRetro() ? String(lv.stage) : 'Stage ' + lv.stage, x + 8, y + SEL.h - (isRetro() ? 12 : 8), 19, on ? '#ffd84a' : '#f4ecb0');
       ctx.globalAlpha = 1;
     });
+    const hint = cont ? 'Press OK to Start Game · Esc: menü' : 'Tıkla ya da oklar + Enter · Esc: menü';
+    if (isRetro()) { outlinedText(hint, W / 2, H - 20, 24, '#c9c3f2', 'center'); return; }
     ctx.font = '600 20px Arial, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#c9c3f2';
-    ctx.fillText(cont ? 'Press OK to Start Game · Esc: menü' : 'Tıkla ya da oklar + Enter · Esc: menü', W / 2, H - 14);
+    ctx.fillText(hint, W / 2, H - 14);
   }
   function startStage(i) { S.score = 0; S.lives = RULES.startLives; startLevel(i); }
   function selMove(d) { S.selIndex = Math.max(0, Math.min(S.selLimit, S.selIndex + d)); }
 
-  function draw() {
+  function draw(t) {
+    const useRetro = retro && !!gl;
+    ctx = gl ? (useRetro ? loCtx : hiCtx) : direct;
+    if (!ctx) return;
+    PXS = useRetro ? 1 / PIX : 1;
+    ctx.setTransform(PXS, 0, 0, PXS, 0, 0);
+    drawScene();
+    if (gl) present(useRetro, t);
+  }
+
+  function drawScene() {
     ctx.drawImage(bg, 0, 0);
     drawFrame();
     if (S.mode === 'menu') { drawMenu(); return; }
@@ -877,10 +1098,25 @@
   if (speedBtn) speedBtn.onclick = cycleSpeed;
   window.addEventListener('keydown', (e) => { if (e.key === 'h' || e.key === 'H') cycleSpeed(); });
   showSpeed();
+  // Görünüm: retro (varsayılan) / modern. Görünüm düğmesi / G tuşu.
+  const viewBtn = document.getElementById('view');
+  const showView = () => {
+    if (!viewBtn) return;
+    viewBtn.textContent = 'Görünüm: ' + (gl ? (retro ? 'Retro' : 'Modern') : 'Modern');
+    viewBtn.disabled = !gl;
+  };
+  function toggleView() {
+    if (!gl) return;
+    retro = !retro; showView();
+    try { localStorage.setItem(VIEW_KEY, retro ? 'retro' : 'modern'); } catch { /* yok say */ }
+  }
+  if (viewBtn) viewBtn.onclick = toggleView;
+  window.addEventListener('keydown', (e) => { if ((e.key === 'g' || e.key === 'G') && !e.repeat) toggleView(); });
+  showView();
   function frame(t) {
     acc += Math.min((t - last) / 1000, 0.05) * gameSpeed; last = t;
     while (acc >= STEP) { update(STEP); acc -= STEP; }
-    draw();
+    draw(t);
     requestAnimationFrame(frame);
   }
 
@@ -891,7 +1127,7 @@
   requestAnimationFrame(frame);
 
   // Tarayıcı testleri için.
-  window.__exblock = { S, RULES, LEVELS, startLevel, newGame };
+  window.__exblock = { S, RULES, LEVELS, startLevel, newGame, view: () => ({ retro: retro && !!gl, webgl: !!gl, w: canvas.width, h: canvas.height }), toggleView };
 
   // ---------- TV modu (Android TV uygulaması / ?tv) ----------
   // Uygulama kumandanın Geri, Oynat/Duraklat ve renkli tuşlarını buraya iletir.
