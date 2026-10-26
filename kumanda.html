@@ -9,7 +9,7 @@
   :root {
     --gece: #080c18; --alan: #020207; --metin: #e0e8f6; --soluk: #95a2b9;
     --kenar-acik: #72819c; --kenar-koyu: #1b2436;
-    --sari: #e3c001; --kirmizi: #c4371f; --yesil: #00ae00; --gumus: #8d93a8;
+    --sari: #e3c001; --kirmizi: #c4371f; --yesil: #00ae00; --mavi: #3570c8; --gumus: #8d93a8;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -101,6 +101,48 @@
   .kucukler .tus { font-size: 14px; }
   .ayar { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: var(--soluk); font-size: 13px; }
   .ayar input { flex: 1; accent-color: var(--sari); }
+  .ayar[hidden] { display: none; }
+
+  /* Mod seçimi: çukur bir ray, seçili mod gümüş tuğla gibi kabarık. */
+  .modlar {
+    display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 10px; padding: 3px;
+    border: 3px solid; border-color: #1b2436 #4a5064 #4a5064 #1b2436; background: #050810;
+  }
+  .modlar button {
+    font: inherit; font-size: 14px; color: var(--soluk); background: transparent; border: 0;
+    padding: 9px 4px; cursor: pointer; touch-action: manipulation;
+  }
+  .modlar button[aria-checked="true"] {
+    color: #10131c; background: #b9bccb; box-shadow: inset 2px 2px 0 #e6e8f0, inset -2px -2px 0 #6c7084;
+  }
+  .modlar button:focus-visible { outline: 2px solid #fff6c0; outline-offset: -3px; }
+
+  /* Kumanda alanının modlara göre içeriği. */
+  #alan .egim, #alan .yonler, #alan .egim-ortala, #alan .egim-izin { display: none; }
+  #alan.mod-eg:not(.menude) .egim, #alan.mod-eg:not(.menude) .egim-ortala { display: block; }
+  #alan.mod-eg.izin-gerek .egim-izin { display: block; }
+  #alan.mod-eg:not(.menude) .ok-izi { display: none; }
+  #alan.mod-tus .yonler { display: grid; }
+  #alan.mod-tus .ok-izi, #alan.mod-tus .ipucu, #alan.mod-tus #parmak { display: none; }
+
+  /* Eğme modu: ortada oyundaki çubuğun küçük bir kopyası, telefonun eğimine göre kayar. */
+  #alan .egim { position: absolute; left: 22px; right: 22px; top: 46%; height: 0; pointer-events: none; }
+  .egim .ray { position: absolute; left: 0; right: 0; top: -2px; height: 4px; background: rgba(185, 188, 203, 0.28); }
+  .egim .orta { position: absolute; left: 50%; top: -14px; width: 2px; height: 28px; margin-left: -1px; background: rgba(185, 188, 203, 0.45); }
+  .egim .cubuk {
+    position: absolute; top: -13px; width: 24%; height: 26px; left: calc((var(--f, 0) + 1) / 2 * 76%);
+    border: 3px solid; border-color: #eef0f6 #6c7084 #6c7084 #eef0f6; background: linear-gradient(#d4d8e3, #8d93a8);
+  }
+  .egim-ortala, .egim-izin { position: absolute; z-index: 1; }
+  .egim-ortala { top: 10px; right: 10px; min-height: 40px; padding: 6px 12px; font-size: 13px;
+    --renk: #4c5470; --acik: #9aa1bb; --koyu: #20253a; }
+  .egim-izin { top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 12px 22px; font-size: 17px;
+    --renk: var(--sari); --acik: #fff27a; --koyu: #7a6800; color: #1d1600; text-shadow: none; }
+  #alan.mod-eg.izin-gerek .egim, #alan.mod-eg.izin-gerek .egim-ortala { display: none; }
+
+  /* Tuş modu: PlayStation yön tuşları gibi basılı tutulan iki büyük düğme. */
+  #alan .yonler { position: absolute; inset: 10px; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .yon { --renk: var(--mavi); --acik: #7aa6e6; --koyu: #173b70; font-size: 46px; touch-action: none; }
 
   /* Kod girişi (QR'sız açıldığında). */
   #giris { display: grid; align-content: center; gap: 14px; text-align: center; padding: 0 8px; }
@@ -141,12 +183,24 @@
   </form>
 
   <div id="kumanda" hidden>
-    <div id="alan" aria-label="Kumanda alanı: kaydırarak çubuğu hareket ettir, dokunarak topu at">
+    <div id="alan" class="mod-kaydir" aria-label="Kumanda alanı">
       <div class="ok-izi"></div>
+      <div class="egim" aria-hidden="true"><div class="ray"></div><div class="orta"></div><div class="cubuk" id="egim-cubuk"></div></div>
+      <button class="tus egim-ortala" id="ortala" type="button">Ortala</button>
+      <button class="tus egim-izin" id="egim-izin" type="button">Eğmeyi aç</button>
+      <div class="yonler">
+        <button class="tus yon" id="sol" type="button" aria-label="Sola">◀</button>
+        <button class="tus yon" id="sag" type="button" aria-label="Sağa">▶</button>
+      </div>
       <div id="parmak"></div>
       <div class="ipucu" id="ipucu">Bağlantı bekleniyor</div>
     </div>
     <div class="tuslar">
+      <div class="modlar" role="radiogroup" aria-label="Kumanda modu">
+        <button type="button" role="radio" data-mod="kaydir" aria-checked="true">Kaydır</button>
+        <button type="button" role="radio" data-mod="eg" aria-checked="false">Eğ</button>
+        <button type="button" role="radio" data-mod="tus" aria-checked="false">Tuşlar</button>
+      </div>
       <button class="tus" id="ok" type="button">Topu at</button>
       <div class="kucukler">
         <button class="tus" id="duraklat" type="button">Duraklat</button>
@@ -154,7 +208,7 @@
         <button class="tus" id="can" type="button">Can</button>
         <button class="tus" id="menu" type="button">Menü</button>
       </div>
-      <label class="ayar">Hassasiyet <input id="hassas" type="range" min="0.8" max="3" step="0.1"></label>
+      <label class="ayar" id="ayar">Hassasiyet <input id="hassas" type="range" min="0.8" max="3" step="0.1"></label>
     </div>
   </div>
 </div>
@@ -189,6 +243,10 @@
     statusEl.className = 'durum' + (kind ? ' ' + kind : '');
   }
   const buzz = (p) => { try { navigator.vibrate && navigator.vibrate(p); } catch { /* yok say */ } };
+
+  // ---------- mod: kaydir | eg | tus ----------
+  const MODE_KEY = 'blok-kumanda-mod', ZERO_KEY = 'blok-kumanda-egim-sifir';
+  let mode = 'kaydir', tiltNote = '';
 
   // ---------- hassasiyet ----------
   let sens = 1.6;
@@ -263,6 +321,7 @@
       clearTimeout(openTimer);
       setStatus('Bağlandı', 'bagli');
       c.send({ t: 'h' });
+      tiltSent = null; heldDir = 0;
       buzz(30);
       keepAwake();
     });
@@ -299,6 +358,8 @@
     const prev = state;
     state = m;
     if (prev && !m.infinite && m.lives < prev.lives) buzz(160);
+    // Yeni bölüm çubuğu ortalar, duraklatınca eğim gönderilmez: eğim konumunu yeniden gönder.
+    if (!prev || prev.mode !== m.mode || prev.paused !== m.paused || prev.stage !== m.stage) tiltSent = null;
     render();
   }
 
@@ -313,13 +374,15 @@
         (s.infinite ? '' : ', ' + s.lives + ' can') + '</span>';
     } else scoreEl.textContent = '';
 
+    const tilting = mode === 'eg';
     let h, ok;
     if (s.mode === 'menu') { h = 'Yukarı aşağı kaydırarak seç, dokununca aç'; ok = 'Seç'; }
     else if (s.mode === 'select') { h = 'Kaydırarak bölüm seç, dokununca başla'; ok = 'Başlat'; }
     else if (playing && s.paused) { h = 'Oyun duraklatıldı'; ok = 'Devam et'; }
-    else if (playing && s.docked) { h = 'Kaydır: çubuk. Dokun: topu at'; ok = 'Topu at'; }
-    else if (playing) { h = 'Sağa sola kaydır'; ok = 'Topu at'; }
+    else if (playing && s.docked) { h = (tilting ? 'Eğ' : 'Kaydır') + ': çubuk. Dokun: topu at'; ok = 'Topu at'; }
+    else if (playing) { h = tilting ? 'Telefonu sağa sola eğ' : 'Sağa sola kaydır'; ok = 'Topu at'; }
     else { h = 'Dokununca menüye dönülür'; ok = 'Menüye dön'; }
+    if (tilting && tiltNote && s.mode !== 'menu' && s.mode !== 'select') h = tiltNote;
     hint.textContent = h;
     okBtn.textContent = ok;
     pauseBtn.textContent = s.paused ? 'Devam' : 'Duraklat';
@@ -334,12 +397,14 @@
 
   function flush() {
     queued = false;
-    if (pendX || pendY) send({ t: 'd', x: pendX, y: pendY });
+    // Eğme modunda oyun sırasında çubuğu eğim sürer; kaydırma yalnız menüde işe yarar.
+    const navOnly = mode !== 'kaydir' && !(state && (state.mode === 'menu' || state.mode === 'select'));
+    if ((pendX || pendY) && !navOnly) send({ t: 'd', x: pendX, y: pendY });
     pendX = 0; pendY = 0;
   }
 
   pad.addEventListener('pointerdown', (e) => {
-    if (active) return; // tek parmak
+    if (active || mode === 'tus' || e.target.closest('button')) return; // tek parmak; alandaki düğmeler kendi işini yapar
     e.preventDefault();
     pad.setPointerCapture(e.pointerId);
     const r = pad.getBoundingClientRect();
@@ -389,6 +454,132 @@
     setTimeout(() => d.remove(), 420);
   }
 
+  // ---------- mod seçimi ----------
+  const modeBtns = Array.from(document.querySelectorAll('.modlar button'));
+  const sensRow = $('ayar');
+  function setMode(m, fromUser) {
+    if (!['kaydir', 'eg', 'tus'].includes(m)) m = 'kaydir';
+    if (mode === 'tus' && m !== 'tus') holdDir(0);
+    mode = m;
+    try { localStorage.setItem(MODE_KEY, m); } catch { /* yok say */ }
+    for (const b of modeBtns) b.setAttribute('aria-checked', String(b.dataset.mod === m));
+    pad.classList.remove('mod-kaydir', 'mod-eg', 'mod-tus');
+    pad.classList.add('mod-' + m);
+    sensRow.hidden = m === 'tus';
+    if (m === 'eg') enableTilt(fromUser);
+    render();
+  }
+  // iOS eğme iznini yalnız dokunuşun içinden verir; bu yüzden click.
+  for (const b of modeBtns) b.addEventListener('click', () => { setMode(b.dataset.mod, true); buzz(10); });
+
+  // ---------- eğme modu ----------
+  // Telefonun eğimi çubuğun konumunu belirler (ortada düz, sağa eğince sağa).
+  // Yerçekimi yönü beta/gamma açılarından hesaplanır, sonra ekranın dönüşüne
+  // göre ekranın yatay eksenine izdüşürülür: dik, yatay ya da masada düz
+  // tutulsa da "ekranın sağ kenarı aşağı" = sağa.
+  const tiltBar = $('egim-cubuk'), zeroBtn = $('ortala'), permBtn = $('egim-izin');
+  let tiltOn = false, tiltRaw = null, tiltPos = 0, tiltSent = null, tiltQueued = false, tiltZero = 0;
+  try { const z = parseFloat(localStorage.getItem(ZERO_KEY)); if (Math.abs(z) < 60) tiltZero = z; } catch { /* yok say */ }
+
+  function screenAngle() {
+    const a = screen.orientation && typeof screen.orientation.angle === 'number' ? screen.orientation.angle : (window.orientation || 0);
+    return ((a % 360) + 360) % 360;
+  }
+
+  function onOrient(e) {
+    if (e.beta == null || e.gamma == null) return;
+    const rad = Math.PI / 180, b = e.beta * rad, g = e.gamma * rad, th = screenAngle() * rad;
+    // Telefonun koordinatlarında "yukarı" yönü
+    const ux = -Math.sin(g) * Math.cos(b), uy = Math.sin(b);
+    // Ekranın sağ kenarının ne kadar aşağıda olduğu (eğim açısının sinüsü)
+    const s = -(ux * Math.cos(th) - uy * Math.sin(th));
+    tiltRaw = Math.asin(Math.max(-1, Math.min(1, s))) / rad;
+    if (tiltNote) { tiltNote = ''; render(); }
+    const range = 40 / sens; // tam sağ/sol için gereken eğim (derece); hassasiyet 1,6 → 25°
+    const target = Math.max(-1, Math.min(1, (tiltRaw - tiltZero) / range));
+    tiltPos += (target - tiltPos) * 0.45; // sensör titremesini yumuşat
+    tiltBar.style.setProperty('--f', tiltPos.toFixed(3));
+    if (!tiltQueued) { tiltQueued = true; requestAnimationFrame(sendTilt); }
+  }
+
+  function sendTilt() {
+    tiltQueued = false;
+    if (mode !== 'eg' || (state && state.paused)) return;
+    if (tiltSent === null || Math.abs(tiltPos - tiltSent) > 0.002) {
+      send({ t: 'p', x: +tiltPos.toFixed(4) });
+      tiltSent = tiltPos;
+    }
+  }
+
+  function setTiltNote(t) { tiltNote = t; hint.textContent = t; render(); }
+
+  async function enableTilt(fromUser) {
+    pad.classList.remove('izin-gerek');
+    const DOE = window.DeviceOrientationEvent;
+    if (!DOE) { setTiltNote('Bu cihazda eğme sensörü yok. Kaydır ya da Tuşlar modunu kullan.'); return; }
+    if (typeof DOE.requestPermission === 'function' && !tiltOn) { // iOS 13+ ve yeni Chrome
+      let granted = false;
+      if (!fromUser) {
+        // Daha önce izin verildiyse dokunuş beklemeden başla (Chrome); iOS'ta sorgu yok, düğme çıkar.
+        try { granted = (await navigator.permissions.query({ name: 'accelerometer' })).state === 'granted'; } catch { /* yok say */ }
+        if (!granted) { pad.classList.add('izin-gerek'); setTiltNote('Eğmeyi kullanmak için izin ver'); return; }
+      } else {
+        let r = 'denied';
+        try { r = await DOE.requestPermission(); } catch { pad.classList.add('izin-gerek'); return; }
+        if (r !== 'granted') { setTiltNote('Hareket sensörü izni verilmedi. Tarayıcının site ayarlarından izin verip sayfayı yenile.'); return; }
+      }
+    }
+    if (!tiltOn) { window.addEventListener('deviceorientation', onOrient); tiltOn = true; }
+    tiltSent = null;
+    tiltNote = '';
+    if (state) render(); else hint.textContent = 'Bağlantı bekleniyor';
+    setTimeout(() => {
+      if (mode === 'eg' && tiltRaw === null) setTiltNote('Eğme sensöründen veri gelmiyor. Kaydır ya da Tuşlar modunu kullan.');
+    }, 1500);
+  }
+  permBtn.addEventListener('click', () => enableTilt(true));
+
+  // Ortala: telefonun şu anki duruşu "düz" sayılır.
+  zeroBtn.addEventListener('click', () => {
+    if (tiltRaw === null) return;
+    tiltZero = tiltRaw;
+    try { localStorage.setItem(ZERO_KEY, String(tiltZero)); } catch { /* yok say */ }
+    buzz(20);
+  });
+  sensEl.addEventListener('input', () => { tiltSent = null; });
+
+  // ---------- tuş modu ----------
+  const leftBtn = $('sol'), rightBtn = $('sag');
+  const pressed = new Set();
+  let heldDir = 0;
+  function holdDir(d) {
+    if (d === heldDir) return;
+    heldDir = d;
+    send({ t: 'k', d });
+  }
+  function updateHold() {
+    // Son basılan kazanır; biri bırakılınca diğeri hâlâ basılıysa ona döner.
+    const list = Array.from(pressed);
+    holdDir(list.length ? list[list.length - 1] : 0);
+  }
+  for (const [el, d] of [[leftBtn, -1], [rightBtn, 1]]) {
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try { el.setPointerCapture(e.pointerId); } catch { /* yok say */ }
+      el.classList.add('basili');
+      pressed.delete(d); pressed.add(d);
+      updateHold();
+      buzz(12);
+      keepAwake();
+    });
+    const up = () => { el.classList.remove('basili'); pressed.delete(d); updateHold(); };
+    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) el.addEventListener(ev, up);
+  }
+  const releaseAll = () => { pressed.clear(); leftBtn.classList.remove('basili'); rightBtn.classList.remove('basili'); holdDir(0); };
+  window.addEventListener('blur', releaseAll);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') releaseAll(); });
+
   // ---------- düğmeler ----------
   for (const [el, b] of [[okBtn, 'ok'], [pauseBtn, 'pause'], [speedBtn, 'speed'], [livesBtn, 'lives'], [menuBtn, 'menu']]) {
     // Gecikme olmasın diye click yerine basıldığı an gönderilir.
@@ -422,6 +613,9 @@
 
   // ---------- başla ----------
   if (!window.Peer) { setStatus('Kumanda dosyası yüklenemedi. Sayfayı yenile.', 'hata'); return; }
+  let savedMode = 'kaydir';
+  try { savedMode = localStorage.getItem(MODE_KEY) || 'kaydir'; } catch { /* yok say */ }
+  setMode(savedMode, false);
   if (code.length === 6) begin();
   else { form.hidden = false; setStatus('Kod bekleniyor'); codeInput.focus(); }
 })();

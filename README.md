@@ -38,9 +38,14 @@ Bilgisayarda ya da TV'de oynarken telefonunu oyun kolu gibi kullanabilirsin:
 
 1. Oyunda **Telefonla oyna** düğmesine bas (klavyede K; TV'de menüdeyken ▶ ya da mavi tuş).
 2. Ekrana gelen QR kodu telefonun kamerasıyla okut. Kamera yoksa telefonda `hamikumbasae.github.io/blok-kirma/kumanda.html` adresini açıp 6 karakterlik kodu yaz.
-3. Telefondaki alanda parmağını sağa sola kaydır: çubuk hareket eder. Dokununca top atılır. Menüde yukarı aşağı kaydırarak seçim yapılır.
+3. Telefonda üç kumanda modundan birini seç:
+   - **Kaydır:** parmağını alanda sağa sola kaydır, çubuk hareket eder. Dokununca top atılır.
+   - **Eğ:** telefonu sağa sola eğ, çubuk eğime göre konumlanır (dik, yatay ya da masada düz tutarken çalışır). **Ortala** o anki duruşu düz kabul eder. iPhone'da ilk seferde hareket sensörü izni istenir.
+   - **Tuşlar:** PlayStation yön tuşları gibi ◀ ▶ basılı tutulur.
 
-Telefonda ayrıca Duraklat (kırmızı), Hız (sarı), Can (yeşil) ve Menü düğmeleri ile hassasiyet ayarı var; renkler TV kumandasındaki tuşlarla aynı. Top kaçınca telefon titrer (Android).
+   Menüde ve bölüm seçiminde alanı yukarı aşağı kaydırarak (Tuşlar modunda ◀ ▶ ile) seçim yapılır.
+
+Telefonda ayrıca Duraklat (kırmızı), Hız (sarı), Can (yeşil) ve Menü düğmeleri ile hassasiyet ayarı var; renkler TV kumandasındaki tuşlarla aynı. Seçilen mod telefonda hatırlanır. Top kaçınca telefon titrer (Android).
 
 Bağlantı WebRTC ile doğrudan iki cihaz arasında kurulur. Eşleştirmeyi [PeerJS](https://peerjs.com/)'in ücretsiz sunucusu yapar, bu yüzden iki cihazın da internete bağlı olması gerekir; sunucuya ulaşılamazsa panel bunu söyler. Oyun sayfası yenilense de kod aynı kalır ve telefon kendiliğinden yeniden bağlanır.
 

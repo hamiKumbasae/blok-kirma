@@ -10,6 +10,8 @@
 //   telefon → oyun  {t:'h'}        bağlandım, durumu gönder
 //                   {t:'d', x, y}  parmak hareketi, kumanda alanının oranı cinsinden
 //                   {t:'u'}        parmak kalktı
+//                   {t:'p', x}     eğme modu: çubuk konumu, -1 (sol) … +1 (sağ)
+//                   {t:'k', d}     tuş modu: ◀ basılı -1, ▶ basılı +1, bırakıldı 0
 //                   {t:'b', b}     düğme: ok | pause | menu | speed | lives
 //   oyun → telefon  {t:'s', ...}   oyun durumu (değiştikçe)
 //                   {t:'v'}        top kaçtı (telefon titrer)
@@ -235,7 +237,7 @@
   }
 
   function accept(c) {
-    if (conn && conn !== c) conn.close(); // aynı anda tek kumanda
+    if (conn && conn !== c) { conn.close(); G.hold(0); } // aynı anda tek kumanda
     conn = c;
     c.on('open', () => {
       lastSent = '';
@@ -248,6 +250,7 @@
     c.on('close', () => {
       if (conn !== c) return;
       conn = null;
+      G.hold(0); // basılı kalmış yön tuşu çubuğu sürüklemesin
       showBadge(false);
       setStatus('Telefon bağlantısı koptu. Kumanda sayfası kendiliğinden yeniden bağlanır.', 'hata');
     });
@@ -278,6 +281,10 @@
       } else if (Math.abs(navX) >= NAV_STEP) {
         G.nav(Math.sign(navX), 0); navX = 0; navY = 0;
       }
+    } else if (m.t === 'p') {
+      G.place(clamp(+m.x || 0));
+    } else if (m.t === 'k') {
+      G.hold(Math.sign(+m.d || 0));
     } else if (m.t === 'u') {
       navX = 0; navY = 0;
     } else if (m.t === 'h') {

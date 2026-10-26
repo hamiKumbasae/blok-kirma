@@ -915,6 +915,21 @@
       if (S.paused || (S.mode !== 'play' && S.mode !== 'intro')) return;
       S.paddleX = Math.max(WALL_L, Math.min(WALL_R - PADDLE.w, S.paddleX + dx));
     },
+    // Çubuğun merkezini alana göre konumlar: -1 en sol, +1 en sağ (telefonu eğme).
+    place(f) {
+      if (S.paused || (S.mode !== 'play' && S.mode !== 'intro')) return;
+      const span = WALL_R - WALL_L - PADDLE.w;
+      S.paddleX = WALL_L + (Math.max(-1, Math.min(1, f)) + 1) / 2 * span;
+    },
+    // Yön tuşu basılı tutma: -1 sol, +1 sağ, 0 bırak. Menüde ve bölüm seçiminde
+    // web sayfasındaki ◀ ▶ düğmeleri gibi bir adım da atar.
+    hold(dir) {
+      keys.delete('left'); keys.delete('right');
+      if (!dir) return;
+      keys.add(dir < 0 ? 'left' : 'right');
+      menuMove(dir);
+      if (S.mode === 'select') selMove(dir);
+    },
     // Menüde ve bölüm seçiminde bir adım: dx, dy ∈ {-1, 0, 1}.
     nav(dx, dy) {
       if (S.mode === 'menu') menuMove(dy || dx);
